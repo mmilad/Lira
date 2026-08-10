@@ -1,0 +1,53 @@
+{
+  "module": {
+    "id": "mod_user_service",
+    "op": "module",
+    "name": "user_service"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./models",
+      "style": "named",
+      "items": [
+        {
+          "name": "User",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "decl_UserService",
+      "op": "define",
+      "kind": "class",
+      "name": "UserService",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_id",
+          "op": "define",
+          "kind": "property",
+          "name": "id",
+          "modifiers": {
+            "private": true,
+            "readonly": true
+          }
+        },
+        {
+          "id": "decl_create",
+          "op": "define",
+          "kind": "method",
+          "name": "create",
+          "modifiers": {},
+          "params": [],
+          "body": []
+        }
+      ]
+    }
+  ]
+}

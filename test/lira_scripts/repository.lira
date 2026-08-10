@@ -1,0 +1,4 @@
+module demo
+
+define export abstract class Repository
+  define abstract method save

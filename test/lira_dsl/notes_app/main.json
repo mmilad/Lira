@@ -1,0 +1,53 @@
+{
+  "module": {
+    "id": "mod_notes_main",
+    "op": "module",
+    "name": "notes_main"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./service",
+      "style": "named",
+      "items": [
+        {
+          "name": "NoteService",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "imp_2",
+      "op": "import",
+      "source": "./models",
+      "style": "named",
+      "items": [
+        {
+          "name": "Note",
+          "alias": "NoteModel"
+        }
+      ]
+    },
+    {
+      "id": "decl_APP_NAME",
+      "op": "define",
+      "kind": "constant",
+      "name": "APP_NAME",
+      "modifiers": {
+        "export": true
+      }
+    },
+    {
+      "id": "decl_boot",
+      "op": "define",
+      "kind": "function",
+      "name": "boot",
+      "modifiers": {
+        "export": true
+      },
+      "params": [],
+      "body": []
+    }
+  ]
+}

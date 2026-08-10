@@ -1,0 +1,7 @@
+module user_service
+
+import User from "./models"
+
+define export class UserService
+  define private readonly property id
+  define method create

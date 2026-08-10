@@ -1,0 +1,7 @@
+module notes_models
+
+define export class Note
+  define public readonly property id
+  define public property title
+  define private property body
+  define static method createEmpty

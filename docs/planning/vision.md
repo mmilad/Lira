@@ -32,6 +32,14 @@ Mixing them makes validation, translation, debugging, and repair harder — espe
 3. **Small surface** — prefer a constrained vocabulary over covering every target-language feature.
 4. **Traceability** — meaningful nodes should be addressable for diagnostics and later repair.
 5. **Language independence** — target syntax must not leak into the portable core.
+6. **Module as the unit** — `module` is the portable compilation/identity boundary; backends map it into each language’s module/package story.
+7. **API forced by few backends** — at most three initial transpilers define the compiler backend API; do not grow targets before the contract is real.
+
+## Portability stance
+
+Perfect “any language” coverage is impossible. Lira still aims at a **generic semantic description** rich enough that the same IR can drive multiple targets.
+
+Enrichment is driven by what those first backends need in common — not by copying any one language. Constructs that cannot be preserved honestly stay `unsupported` (or deferred), never silently weakened.
 
 ## Current phase (v0 keyword→DSL)
 

@@ -143,3 +143,30 @@ Format:
 - **Decision**: Full expression/operator/control-flow DSL is outside this experiment.
 - **Rationale**: v0 force is keywords→DSL for declarations and imports.
 - **Follow-up**: Roadmap phases 3–6.
+
+## D016 — `module` is the portable unit
+
+- **Status**: accepted
+- **Scope**: project
+- **Date**: 2026-08-10
+- **Decision**: Keep `module` as a first-class semantic boundary in DSL and IR. It is not TypeScript/ESM syntax; backends map it into each target’s module/package model.
+- **Rationale**: Cross-language compilation needs a stable ownership/export unit. Examples like `module demo` are the start of that contract, not decoration.
+- **Follow-up**: Document per-backend mapping notes when the first transpilers land (file layout, public exports, naming).
+
+## D017 — Max three initial transpilers to define the API
+
+- **Status**: superseded
+- **Scope**: project
+- **Date**: 2026-08-10
+- **Decision**: Build at most three initial backends — TypeScript, Python, PHP — to force a shared `compile(ir, options)` API.
+- **Rationale**: Superseded by D018 — prefer committed idempotent test pipeline over a product backend API for now.
+- **Follow-up**: See D018.
+
+## D018 — Committed idempotent test pipeline
+
+- **Status**: accepted
+- **Scope**: project
+- **Date**: 2026-08-10
+- **Decision**: Use `test/lira_scripts/**/*.lira` → `test/lira_dsl/<name>.json` → `test/lira_output/<target>/**/<name>.<ext>` with committed goldens. `npm run generate` writes; `npm test` re-runs and diffs. No SLM loop required; logic must stay idempotent. Initial emit targets: `ts` and `py` (PHP later if needed).
+- **Rationale**: Retestability matters more than a formal backend package right now. Multi-target emit still pressures portable IR without inventing a product API early.
+- **Follow-up**: Grow scripts under `test/lira_scripts/`; keep illegal keyword cases in `examples/v0/illegal/`.

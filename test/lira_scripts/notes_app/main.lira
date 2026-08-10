@@ -1,0 +1,8 @@
+module notes_main
+
+import NoteService from "./service"
+import Note as NoteModel from "./models"
+
+define export constant APP_NAME
+
+define export function boot

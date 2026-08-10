@@ -1,0 +1,34 @@
+{
+  "module": {
+    "id": "mod_demo",
+    "op": "module",
+    "name": "demo"
+  },
+  "body": [
+    {
+      "id": "decl_Repository",
+      "op": "define",
+      "kind": "class",
+      "name": "Repository",
+      "modifiers": {
+        "abstract": true,
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_save",
+          "op": "define",
+          "kind": "method",
+          "name": "save",
+          "modifiers": {
+            "abstract": true
+          },
+          "params": [],
+          "body": null
+        }
+      ]
+    }
+  ]
+}

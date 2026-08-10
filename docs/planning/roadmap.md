@@ -203,19 +203,19 @@ target compiler/runtime diagnostic
 
 ## Phase 10 — First implementation
 
-Only now choose implementation technology.
+Only now choose implementation technology (**Node/TypeScript** preferred for the compiler host).
 
 Minimum prototype:
 
 1. textual parser or JSON input;
 2. canonical IR schema;
 3. validator;
-4. TypeScript backend;
-5. Python backend;
-6. source mapping;
-7. CLI/API wrapper.
+4. shared backend API (`compile(ir, options) -> files/diagnostics/sourceMap`);
+5. at most **three** initial backends to pressure that API — planned: TypeScript, Python, PHP;
+6. source mapping with IR node IDs;
+7. CLI wrapper over the same API.
 
-PHP can follow once the semantic core survives two sufficiently different targets.
+Do not add a fourth target until the three-backend API feels stable. `module` remains the portable unit each backend must map honestly.
 
 ## Phase 11 — SLM experiment
 

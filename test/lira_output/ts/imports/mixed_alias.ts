@@ -1,0 +1,2 @@
+// module demo
+import { a, b, c as x } from "pkg";

@@ -626,4 +626,12 @@ function main(argv) {
   return 2;
 }
 
-process.exitCode = main(process.argv.slice(2));
+export { reviewSource, normalizeIr };
+
+const isMain =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isMain) {
+  process.exitCode = main(process.argv.slice(2));
+}

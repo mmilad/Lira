@@ -1,0 +1,61 @@
+{
+  "module": {
+    "id": "mod_notes_models",
+    "op": "module",
+    "name": "notes_models"
+  },
+  "body": [
+    {
+      "id": "decl_Note",
+      "op": "define",
+      "kind": "class",
+      "name": "Note",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_id",
+          "op": "define",
+          "kind": "property",
+          "name": "id",
+          "modifiers": {
+            "public": true,
+            "readonly": true
+          }
+        },
+        {
+          "id": "decl_title",
+          "op": "define",
+          "kind": "property",
+          "name": "title",
+          "modifiers": {
+            "public": true
+          }
+        },
+        {
+          "id": "decl_body",
+          "op": "define",
+          "kind": "property",
+          "name": "body",
+          "modifiers": {
+            "private": true
+          }
+        },
+        {
+          "id": "decl_createEmpty",
+          "op": "define",
+          "kind": "method",
+          "name": "createEmpty",
+          "modifiers": {
+            "static": true
+          },
+          "params": [],
+          "body": []
+        }
+      ]
+    }
+  ]
+}

@@ -42,9 +42,30 @@ Rejects invalid or unsupported combinations before a backend generates source co
 
 Maps canonical Lira operations into a target language. Backends may apply language-specific rules while preserving the same program intent.
 
+Initial strategy: **at most three backends** so the shared backend API is designed against real diversity, not one language’s habits. Candidate first set: TypeScript, Python, PHP.
+
+### Module boundary
+
+`module` in Lira is semantic, not TypeScript/ESM syntax. It names a portable unit of declarations + imports/exports. Each backend decides file layout, package exports, and naming conventions while preserving the same public API intent.
+
 ### Source map
 
 Tracks which generated source ranges originate from which Lira operations. This should make compiler and runtime errors traceable back to the semantic representation.
+
+## Backend API sketch (future)
+
+All backends should eventually share one contract roughly like:
+
+```text
+compile(ir, options) -> { files, diagnostics, sourceMap }
+```
+
+- input is **canonical IR only** (never raw `.lira` text)
+- options may include target profile / strictness
+- diagnostics must refer to IR node IDs
+- unsupported portable constructs fail closed in strict mode
+
+The exact interface will be written when the first backends land — capped at three until that API stabilizes.
 
 ## Design principles
 
@@ -54,13 +75,16 @@ Tracks which generated source ranges originate from which Lira operations. This 
 4. Backend-specific features should not silently corrupt language independence.
 5. Every meaningful IR node should be addressable so that errors and patches can refer to it.
 6. Validation should happen before code generation whenever possible.
+7. Enrich IR from multi-backend pressure, not from a single target’s wishlist.
+8. Cap initial backends at three until the API is proven.
 
 ## Open questions
 
 - What is the minimal useful type system?
-- How should imports/modules be represented across incompatible module systems?
+- How should Lira `module` / import / export map across ESM, Python packages, and PHP autoloading?
 - Which control-flow constructs belong in the portable core?
-- How should language-specific extensions work?
+- How should language-specific extensions / profiles work?
 - Should the external Lira syntax be text, JSON, or both?
 - What guarantees should compiler backends provide about semantic equivalence?
 - What mapping format should connect generated code back to Lira node IDs?
+- What is the exact `compile(ir, options)` TypeScript interface for the first three backends?

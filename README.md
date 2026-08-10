@@ -97,6 +97,7 @@ Start here:
 - [docs/planning/keyword-dsl-v0.md](docs/planning/keyword-dsl-v0.md)
 - [docs/planning/keyword-matrix-v0.md](docs/planning/keyword-matrix-v0.md)
 - Checker: `node tools/lira_keyword_dsl.mjs check`
+- Test pipeline: `npm run generate` then `npm test` (see [test/README.md](test/README.md))
 - Optional Cursor skill: `.cursor/skills/lira-keyword-dsl/`
 
 ## Status

@@ -1,0 +1,84 @@
+{
+  "module": {
+    "id": "mod_notes_service",
+    "op": "module",
+    "name": "notes_service"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./models",
+      "style": "named",
+      "items": [
+        {
+          "name": "Note",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "imp_2",
+      "op": "import",
+      "source": "./store",
+      "style": "named",
+      "items": [
+        {
+          "name": "NoteStore",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "decl_NoteService",
+      "op": "define",
+      "kind": "class",
+      "name": "NoteService",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_store",
+          "op": "define",
+          "kind": "property",
+          "name": "store",
+          "modifiers": {
+            "private": true
+          }
+        },
+        {
+          "id": "decl_create",
+          "op": "define",
+          "kind": "method",
+          "name": "create",
+          "modifiers": {},
+          "params": [],
+          "body": []
+        },
+        {
+          "id": "decl_load",
+          "op": "define",
+          "kind": "method",
+          "name": "load",
+          "modifiers": {
+            "async": true
+          },
+          "params": [],
+          "body": []
+        },
+        {
+          "id": "decl_list",
+          "op": "define",
+          "kind": "method",
+          "name": "list",
+          "modifiers": {},
+          "params": [],
+          "body": []
+        }
+      ]
+    }
+  ]
+}

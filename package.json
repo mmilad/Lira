@@ -1,0 +1,12 @@
+{
+  "name": "lira",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Language Independent Representation API",
+  "scripts": {
+    "generate": "node tools/lira_pipeline.mjs generate",
+    "test": "node tools/lira_pipeline.mjs test",
+    "check:examples": "node tools/lira_keyword_dsl.mjs check"
+  }
+}

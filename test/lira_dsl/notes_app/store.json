@@ -1,0 +1,56 @@
+{
+  "module": {
+    "id": "mod_notes_store",
+    "op": "module",
+    "name": "notes_store"
+  },
+  "body": [
+    {
+      "id": "decl_NoteStore",
+      "op": "define",
+      "kind": "class",
+      "name": "NoteStore",
+      "modifiers": {
+        "abstract": true,
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_get",
+          "op": "define",
+          "kind": "method",
+          "name": "get",
+          "modifiers": {
+            "abstract": true
+          },
+          "params": [],
+          "body": null
+        },
+        {
+          "id": "decl_save",
+          "op": "define",
+          "kind": "method",
+          "name": "save",
+          "modifiers": {
+            "abstract": true
+          },
+          "params": [],
+          "body": null
+        },
+        {
+          "id": "decl_list",
+          "op": "define",
+          "kind": "method",
+          "name": "list",
+          "modifiers": {
+            "abstract": true
+          },
+          "params": [],
+          "body": null
+        }
+      ]
+    }
+  ]
+}

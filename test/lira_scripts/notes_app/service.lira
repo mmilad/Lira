@@ -1,0 +1,10 @@
+module notes_service
+
+import Note from "./models"
+import NoteStore from "./store"
+
+define export class NoteService
+  define private property store
+  define method create
+  define async method load
+  define method list
