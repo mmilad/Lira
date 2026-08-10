@@ -33,7 +33,9 @@ description: >-
 
 ## Allowed operations
 
-`module`, `define`, `import`, `export`, `return`, `assign`, `set`, `call`
+`module`, `define`, `import`, `export`, `return`, `assign`, `set`, `call`, `if`, `else`
+
+Boolean ops in expressions: `and`, `or`, `not` (not `&&` / `||` / `!`).
 
 ## Authoring for the test pipeline
 

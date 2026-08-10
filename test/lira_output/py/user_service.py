@@ -2,7 +2,7 @@
 from "./models" import User
 
 class UserService:
-    id: object
+    id
 
     def create(self) -> None:
         pass

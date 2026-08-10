@@ -1,8 +1,8 @@
 // module f5_members
 export class Account {
-  public name: unknown = "anon";
-  private secret: unknown;
-  public static version: unknown = 1;
+  public name = "anon";
+  private secret;
+  public static version = 1;
   public ping(): string {
     return "ok";
   }

@@ -96,6 +96,47 @@
           "returns": "Note",
           "body": [
             {
+              "id": "decl_safeTitle",
+              "op": "define",
+              "kind": "variable",
+              "name": "safeTitle",
+              "modifiers": {},
+              "init": {
+                "kind": "ref",
+                "name": "title"
+              }
+            },
+            {
+              "id": "stmt_2",
+              "op": "if",
+              "condition": {
+                "kind": "binary",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "name": "title"
+                },
+                "right": {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": ""
+                }
+              },
+              "then": [
+                {
+                  "id": "stmt_3",
+                  "op": "assign",
+                  "name": "safeTitle",
+                  "value": {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "untitled"
+                  }
+                }
+              ],
+              "else": null
+            },
+            {
               "id": "decl_note",
               "op": "define",
               "kind": "variable",
@@ -112,13 +153,13 @@
                   },
                   {
                     "kind": "ref",
-                    "name": "title"
+                    "name": "safeTitle"
                   }
                 ]
               }
             },
             {
-              "id": "stmt_2",
+              "id": "stmt_4",
               "op": "call",
               "callee": {
                 "kind": "member",
@@ -136,7 +177,7 @@
               ]
             },
             {
-              "id": "stmt_3",
+              "id": "stmt_5",
               "op": "return",
               "value": {
                 "kind": "ref",
@@ -163,7 +204,7 @@
           "returns": "Note",
           "body": [
             {
-              "id": "stmt_4",
+              "id": "stmt_6",
               "op": "return",
               "value": {
                 "kind": "call",
@@ -197,7 +238,7 @@
           "returns": "Note",
           "body": [
             {
-              "id": "stmt_5",
+              "id": "stmt_7",
               "op": "return",
               "value": {
                 "kind": "call",

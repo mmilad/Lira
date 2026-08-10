@@ -1,0 +1,4 @@
+module demo
+
+if true
+  return 1

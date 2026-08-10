@@ -1,7 +1,7 @@
 module f6_constructor
 
 define export class User
-  define public property name
+  define public property name: string
   define constructor(name: string)
     set this.name = name
     return

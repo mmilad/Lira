@@ -1,0 +1,12 @@
+// module f10_if
+export function label(n: number): string {
+  if ((n == 0)) {
+    return "zero";
+  } else {
+    if ((n > 0)) {
+      return "positive";
+    } else {
+      return "negative";
+    }
+  }
+}

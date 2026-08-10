@@ -53,7 +53,8 @@
           "name": "name",
           "modifiers": {
             "public": true
-          }
+          },
+          "type": "string"
         },
         {
           "id": "decl_Person_constructor",

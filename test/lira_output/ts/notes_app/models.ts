@@ -1,8 +1,8 @@
 // module notes_models
 export class Note {
-  public readonly id: unknown;
-  public title: unknown;
-  private body: unknown;
+  public readonly id;
+  public title;
+  private body;
   constructor(id: string, title: string) {
     this.id = id;
     this.title = title;

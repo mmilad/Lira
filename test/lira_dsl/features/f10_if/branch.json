@@ -1,0 +1,96 @@
+{
+  "module": {
+    "id": "mod_f10_if",
+    "op": "module",
+    "name": "f10_if"
+  },
+  "body": [
+    {
+      "id": "decl_label",
+      "op": "define",
+      "kind": "function",
+      "name": "label",
+      "modifiers": {
+        "export": true
+      },
+      "params": [
+        {
+          "name": "n",
+          "type": "number"
+        }
+      ],
+      "returns": "string",
+      "body": [
+        {
+          "id": "stmt_1",
+          "op": "if",
+          "condition": {
+            "kind": "binary",
+            "op": "==",
+            "left": {
+              "kind": "ref",
+              "name": "n"
+            },
+            "right": {
+              "kind": "literal",
+              "type": "number",
+              "value": 0
+            }
+          },
+          "then": [
+            {
+              "id": "stmt_2",
+              "op": "return",
+              "value": {
+                "kind": "literal",
+                "type": "string",
+                "value": "zero"
+              }
+            }
+          ],
+          "else": [
+            {
+              "id": "stmt_3",
+              "op": "if",
+              "condition": {
+                "kind": "binary",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "name": "n"
+                },
+                "right": {
+                  "kind": "literal",
+                  "type": "number",
+                  "value": 0
+                }
+              },
+              "then": [
+                {
+                  "id": "stmt_4",
+                  "op": "return",
+                  "value": {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "positive"
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "stmt_5",
+                  "op": "return",
+                  "value": {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "negative"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

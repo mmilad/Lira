@@ -2,7 +2,7 @@
 import { User } from "./models";
 
 export class UserService {
-  private readonly id: unknown;
+  private readonly id;
   create(): void {
     
   }

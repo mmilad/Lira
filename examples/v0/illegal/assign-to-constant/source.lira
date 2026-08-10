@@ -1,0 +1,6 @@
+module demo
+
+define export function bad() -> number
+  define constant n = 1
+  assign n = 2
+  return n

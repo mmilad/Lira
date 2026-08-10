@@ -4,12 +4,16 @@ import { Note } from "./models";
 import { NoteStore } from "./store";
 
 export class NoteService {
-  private store: unknown;
+  private store;
   constructor(store: NoteStore) {
     this.store = store;
   }
   public create(title: string): Note {
-    let note = new Note("1", title);
+    let safeTitle = title;
+    if ((title == "")) {
+      safeTitle = "untitled";
+    }
+    let note = new Note("1", safeTitle);
     this.store.save(note);
     return note;
   }

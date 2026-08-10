@@ -1,6 +1,6 @@
 # module f6_constructor
 class User:
-    name: object
+    name: str
 
     def __init__(self, name: str) -> None:
         self.name = name

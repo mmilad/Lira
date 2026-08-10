@@ -4,7 +4,7 @@ define export interface Greeter
   define method greet(name: string) -> string
 
 define export class Person implements Greeter
-  define public property name
+  define public property name: string
   define constructor(name: string)
     set this.name = name
   define public method greet(name: string) -> string

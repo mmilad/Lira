@@ -1,0 +1,5 @@
+{
+  "legal": false,
+  "error": "cannot assign to constant",
+  "rules": ["F2", "D020"]
+}

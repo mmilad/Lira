@@ -4,14 +4,17 @@ from "./models" import Note
 from "./store" import NoteStore
 
 class NoteService:
-    store: object
+    store
 
     def __init__(self, store: NoteStore) -> None:
         self.store = store
 
 
     def create(self, title: str) -> Note:
-        note = Note("1", title)
+        safeTitle = title
+        if (title == ""):
+            safeTitle = "untitled"
+        note = Note("1", safeTitle)
         self.store.save(note)
         return note
 

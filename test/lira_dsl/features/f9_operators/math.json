@@ -1,0 +1,127 @@
+{
+  "module": {
+    "id": "mod_f9_operators",
+    "op": "module",
+    "name": "f9_operators"
+  },
+  "body": [
+    {
+      "id": "decl_calc",
+      "op": "define",
+      "kind": "function",
+      "name": "calc",
+      "modifiers": {
+        "export": true
+      },
+      "params": [
+        {
+          "name": "a",
+          "type": "number"
+        },
+        {
+          "name": "b",
+          "type": "number"
+        }
+      ],
+      "returns": "number",
+      "body": [
+        {
+          "id": "decl_sum",
+          "op": "define",
+          "kind": "variable",
+          "name": "sum",
+          "modifiers": {},
+          "init": {
+            "kind": "binary",
+            "op": "+",
+            "left": {
+              "kind": "ref",
+              "name": "a"
+            },
+            "right": {
+              "kind": "binary",
+              "op": "*",
+              "left": {
+                "kind": "ref",
+                "name": "b"
+              },
+              "right": {
+                "kind": "literal",
+                "type": "number",
+                "value": 2
+              }
+            }
+          }
+        },
+        {
+          "id": "decl_ok",
+          "op": "define",
+          "kind": "variable",
+          "name": "ok",
+          "modifiers": {},
+          "init": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": ">=",
+              "left": {
+                "kind": "ref",
+                "name": "sum"
+              },
+              "right": {
+                "kind": "literal",
+                "type": "number",
+                "value": 10
+              }
+            },
+            "right": {
+              "kind": "unary",
+              "op": "not",
+              "expr": {
+                "kind": "literal",
+                "type": "boolean",
+                "value": false
+              }
+            }
+          }
+        },
+        {
+          "id": "stmt_1",
+          "op": "if",
+          "condition": {
+            "kind": "ref",
+            "name": "ok"
+          },
+          "then": [
+            {
+              "id": "stmt_2",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "sum"
+              }
+            }
+          ],
+          "else": null
+        },
+        {
+          "id": "stmt_3",
+          "op": "return",
+          "value": {
+            "kind": "binary",
+            "op": "-",
+            "left": {
+              "kind": "ref",
+              "name": "a"
+            },
+            "right": {
+              "kind": "ref",
+              "name": "b"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

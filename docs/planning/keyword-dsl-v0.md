@@ -4,7 +4,7 @@
 >
 > Centerpiece: how keywords compose into textual Lira and normalize to canonical IR.
 
-Related: [keyword-matrix-v0.md](keyword-matrix-v0.md), [decision-log.md](decision-log.md), [parser-and-scope.md](parser-and-scope.md)
+Related: [keyword-matrix-v0.md](keyword-matrix-v0.md), [decision-log.md](decision-log.md), [parser-and-scope.md](parser-and-scope.md), [target-mapping.md](target-mapping.md)
 
 ## Mental model
 
@@ -451,6 +451,15 @@ define variable user = construct User("Ada")
 call user.greet(other.name)
 ```
 
+### Property types
+
+```lira
+define public property name: string
+define public property name: string = "anon"
+```
+
+Omit the type when unknown; emitters must not invent `unknown`/`any`.
+
 ### Constructor + set
 
 ```lira
@@ -465,12 +474,25 @@ define export interface Greeter
   define method greet(name: string) -> string
 ```
 
+### Operators + if
+
+```lira
+define variable sum = a + b * 2
+if sum >= 10 and not false
+  return sum
+else
+  return a - b
+```
+
+Precedence: `* /` → `+ -` → comparisons → `and` → `or`. Unary: `not`, `-`.
+
 ## Intentionally still out of scope
 
 - default import/export
 - nested classes
 - escaped identifiers
 - brace/`end` blocks as alternative to indentation
-- operators, `if` / loops / try
+- `while` / `for` / `match` / `else if` sugar
+- bitwise ops, `===`
 
 Do not invent spellings for out-of-scope forms; extend via revision protocol + feature tests.

@@ -23,7 +23,8 @@
           "name": "name",
           "modifiers": {
             "public": true
-          }
+          },
+          "type": "string"
         },
         {
           "id": "decl_User_constructor",

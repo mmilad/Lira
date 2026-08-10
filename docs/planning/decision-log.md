@@ -207,6 +207,33 @@ Format:
 - **Rationale**: Needed for portable ports (e.g. NoteStore). Supersedes D012.
 - **Follow-up**: Feature tests in `f7_interface`; notes_app uses interface store.
 
+## D026 — Target mapping table
+
+- **Status**: accepted
+- **Scope**: project
+- **Date**: 2026-08-10
+- **Decision**: Maintain [target-mapping.md](target-mapping.md) as the contract for Lira→TS/Python mappings with strength `exact` / `compatible` / `unsupported`. Emitters must follow the table; new type concepts need a row before emit.
+- **Rationale**: Concepts like `interface`, `constant`, and `private` vary by language; documenting strength beats pretending equivalence.
+- **Follow-up**: Add a PHP column only when a third emitter is introduced.
+
+## D027 — F9 operators
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: Portable ops: `* /`, `+ -`, comparisons, `and`/`or`/`not`, unary `-`. No `===`, no `&&`/`||` spellings in Lira.
+- **Rationale**: Language-neutral keywords; TS emitter maps boolean ops to symbols.
+- **Follow-up**: `test/lira_scripts/features/f9_operators/`.
+
+## D028 — F10 if / else
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: `if <expr>` / optional `else` with indentation bodies. No `else if` sugar; nest instead. Only inside callable (or nested if) bodies.
+- **Rationale**: Minimal control flow for real app logic in the pipeline.
+- **Follow-up**: `test/lira_scripts/features/f10_if/`; assign-to-constant rejected in parser.
+
 ## D016 — `module` is the portable unit
 
 - **Status**: accepted

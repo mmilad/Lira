@@ -38,7 +38,17 @@ const VISIBILITY = new Set(["public", "protected", "private"]);
 const MEMBER_KINDS = new Set(["method", "property", "constructor"]);
 const MODULE_ONLY_KINDS = new Set(["class", "function", "interface"]);
 const CALLABLE_KINDS = new Set(["function", "method", "constructor"]);
-const BODY_OWNER_SCOPES = new Set(["function", "method", "constructor"]);
+const BODY_OWNER_SCOPES = new Set([
+  "function",
+  "method",
+  "constructor",
+  "if_then",
+  "if_else",
+]);
+
+const COMPARE_OPS = new Set(["==", "!=", "<=", ">=", "<", ">"]);
+const ADD_OPS = new Set(["+", "-"]);
+const MUL_OPS = new Set(["*", "/"]);
 
 /** @type {Record<string, Record<string, "allowed" | "invalid" | "deferred">>} */
 const MATRIX = {
@@ -148,122 +158,287 @@ function makeId(prefix, name) {
 
 /* ---------------- expressions ---------------- */
 
-function parseExpression(input) {
+function tokenizeExpr(input) {
   const src = input.trim();
-  if (!src) throw new Error("empty expression");
-
-  // construct Type(args...)
-  let m = src.match(/^construct\s+([A-Za-z_][\w]*)\s*(?:\((.*)\))?$/s);
-  if (m) {
-    return {
-      kind: "construct",
-      type: m[1],
-      args: parseArgList(m[2] ?? ""),
-    };
-  }
-
-  // call callee(args...)  — only when prefixed with call
-  m = src.match(/^call\s+(.+)$/s);
-  if (m) {
-    return parseCallExpr(m[1].trim());
-  }
-
-  // bare call-looking: name(... ) or member(...) — used inside arg lists? keep as call shape when parens present
-  m = src.match(/^(.+?)\((.*)\)$/s);
-  if (m && !/^["']/.test(src) && !/^(true|false|null)$/.test(src)) {
-    const head = m[1].trim();
-    if (/^[A-Za-z_][\w.]*(?:\.[A-Za-z_][\w]*)*$/.test(head)) {
-      return {
-        kind: "call",
-        callee: parseCallee(head),
-        args: parseArgList(m[2]),
-      };
+  const tokens = [];
+  let i = 0;
+  while (i < src.length) {
+    const ch = src[i];
+    if (/\s/.test(ch)) {
+      i += 1;
+      continue;
     }
+    if (ch === '"') {
+      let j = i + 1;
+      let value = "";
+      while (j < src.length) {
+        if (src[j] === "\\" && j + 1 < src.length) {
+          value += src[j + 1];
+          j += 2;
+          continue;
+        }
+        if (src[j] === '"') break;
+        value += src[j];
+        j += 1;
+      }
+      if (j >= src.length) throw new Error("unterminated string");
+      tokens.push({ type: "string", value });
+      i = j + 1;
+      continue;
+    }
+    if (/[0-9]/.test(ch) || (ch === "-" && /[0-9]/.test(src[i + 1] || ""))) {
+      let j = i + 1;
+      while (j < src.length && /[0-9.]/.test(src[j])) j += 1;
+      tokens.push({ type: "number", value: Number(src.slice(i, j)) });
+      i = j;
+      continue;
+    }
+    if ("(),.".includes(ch)) {
+      tokens.push({ type: ch });
+      i += 1;
+      continue;
+    }
+    if (ch === "=" || ch === "!" || ch === "<" || ch === ">") {
+      const two = src.slice(i, i + 2);
+      if (COMPARE_OPS.has(two)) {
+        tokens.push({ type: "op", value: two });
+        i += 2;
+        continue;
+      }
+      if (ch === "<" || ch === ">") {
+        tokens.push({ type: "op", value: ch });
+        i += 1;
+        continue;
+      }
+      throw new Error(`invalid operator near ${JSON.stringify(src.slice(i))}`);
+    }
+    if (ADD_OPS.has(ch) || MUL_OPS.has(ch)) {
+      tokens.push({ type: "op", value: ch });
+      i += 1;
+      continue;
+    }
+    if (/[A-Za-z_]/.test(ch)) {
+      let j = i + 1;
+      while (j < src.length && /[A-Za-z_0-9]/.test(src[j])) j += 1;
+      const word = src.slice(i, j);
+      if (word === "and" || word === "or" || word === "not") {
+        tokens.push({ type: "op", value: word });
+      } else if (word === "true" || word === "false") {
+        tokens.push({ type: "boolean", value: word === "true" });
+      } else if (word === "null") {
+        tokens.push({ type: "null" });
+      } else if (word === "construct" || word === "call") {
+        tokens.push({ type: "keyword", value: word });
+      } else {
+        tokens.push({ type: "id", value: word });
+      }
+      i = j;
+      continue;
+    }
+    throw new Error(`unexpected character ${JSON.stringify(ch)} in expression`);
   }
-
-  return parsePrimary(src);
+  return tokens;
 }
 
-function parseCallExpr(src) {
-  const m = src.match(/^(.+?)\((.*)\)$/s);
-  if (m) {
-    return {
-      kind: "call",
-      callee: parseCallee(m[1].trim()),
-      args: parseArgList(m[2]),
-    };
-  }
-  // call without args: call user.greet
-  return {
-    kind: "call",
-    callee: parseCallee(src),
-    args: [],
+function parseExpression(input) {
+  const tokens = tokenizeExpr(input);
+  if (!tokens.length) throw new Error("empty expression");
+  const parser = {
+    tokens,
+    i: 0,
+    peek() {
+      return this.tokens[this.i] || null;
+    },
+    take() {
+      return this.tokens[this.i++] || null;
+    },
+    match(...types) {
+      const t = this.peek();
+      if (!t) return null;
+      if (types.includes(t.type) || (t.type === "op" && types.includes(t.value))) {
+        return this.take();
+      }
+      return null;
+    },
   };
+  const expr = parseOr(parser);
+  if (parser.peek()) {
+    throw new Error(`unexpected token in expression: ${JSON.stringify(parser.peek())}`);
+  }
+  return expr;
 }
 
-function parseCallee(src) {
-  const parts = src.split(".").map((p) => p.trim());
-  if (!parts.length || parts.some((p) => !/^[A-Za-z_][\w]*$/.test(p))) {
-    throw new Error(`invalid callee: ${JSON.stringify(src)}`);
+function parseOr(p) {
+  let left = parseAnd(p);
+  while (p.peek()?.type === "op" && p.peek().value === "or") {
+    p.take();
+    left = { kind: "binary", op: "or", left, right: parseAnd(p) };
   }
+  return left;
+}
+
+function parseAnd(p) {
+  let left = parseCompare(p);
+  while (p.peek()?.type === "op" && p.peek().value === "and") {
+    p.take();
+    left = { kind: "binary", op: "and", left, right: parseCompare(p) };
+  }
+  return left;
+}
+
+function parseCompare(p) {
+  let left = parseAdd(p);
+  while (p.peek()?.type === "op" && COMPARE_OPS.has(p.peek().value)) {
+    const op = p.take().value;
+    left = { kind: "binary", op, left, right: parseAdd(p) };
+  }
+  return left;
+}
+
+function parseAdd(p) {
+  let left = parseMul(p);
+  while (p.peek()?.type === "op" && ADD_OPS.has(p.peek().value)) {
+    const op = p.take().value;
+    left = { kind: "binary", op, left, right: parseMul(p) };
+  }
+  return left;
+}
+
+function parseMul(p) {
+  let left = parseUnary(p);
+  while (p.peek()?.type === "op" && MUL_OPS.has(p.peek().value)) {
+    const op = p.take().value;
+    left = { kind: "binary", op, left, right: parseUnary(p) };
+  }
+  return left;
+}
+
+function parseUnary(p) {
+  if (p.peek()?.type === "op" && p.peek().value === "not") {
+    p.take();
+    return { kind: "unary", op: "not", expr: parseUnary(p) };
+  }
+  if (p.peek()?.type === "op" && p.peek().value === "-") {
+    p.take();
+    return { kind: "unary", op: "-", expr: parseUnary(p) };
+  }
+  return parsePostfix(p);
+}
+
+function parseArgListFromTokens(p) {
+  const args = [];
+  if (p.peek()?.type === ")") return args;
+  args.push(parseOr(p));
+  while (p.match(",")) {
+    args.push(parseOr(p));
+  }
+  return args;
+}
+
+function parseCalleeFromParts(parts) {
+  if (!parts.length) throw new Error("empty callee");
   if (parts.length === 1) return { kind: "ref", name: parts[0] };
   return { kind: "member", parts };
 }
 
-function parseArgList(chunk) {
-  const text = chunk.trim();
-  if (!text) return [];
-  const args = [];
-  let depth = 0;
-  let start = 0;
-  let inStr = null;
-  for (let i = 0; i < text.length; i += 1) {
-    const ch = text[i];
-    if (inStr) {
-      if (ch === "\\" && i + 1 < text.length) {
-        i += 1;
-        continue;
-      }
-      if (ch === inStr) inStr = null;
-      continue;
+function parsePostfix(p) {
+  if (p.peek()?.type === "keyword" && p.peek().value === "construct") {
+    p.take();
+    const typeTok = p.take();
+    if (!typeTok || typeTok.type !== "id") throw new Error("construct requires a type name");
+    let args = [];
+    if (p.match("(")) {
+      args = parseArgListFromTokens(p);
+      if (!p.match(")")) throw new Error("expected ) after construct args");
     }
-    if (ch === '"' || ch === "'") {
-      inStr = ch;
-      continue;
-    }
-    if (ch === "(") depth += 1;
-    else if (ch === ")") depth -= 1;
-    else if (ch === "," && depth === 0) {
-      args.push(parseExpression(text.slice(start, i)));
-      start = i + 1;
-    }
+    return { kind: "construct", type: typeTok.value, args };
   }
-  args.push(parseExpression(text.slice(start)));
-  return args;
+
+  if (p.peek()?.type === "keyword" && p.peek().value === "call") {
+    p.take();
+    return parseCallTail(p);
+  }
+
+  let expr = parsePrimaryAtom(p);
+
+  // member chain / call: already partially in atom for id.id; handle trailing (args)
+  while (p.peek()?.type === "(") {
+    p.take();
+    const args = parseArgListFromTokens(p);
+    if (!p.match(")")) throw new Error("expected ) after call args");
+    const callee =
+      expr.kind === "ref"
+        ? { kind: "ref", name: expr.name }
+        : expr.kind === "member"
+          ? { kind: "member", parts: expr.parts }
+          : null;
+    if (!callee) throw new Error("invalid call target");
+    expr = { kind: "call", callee, args };
+  }
+  return expr;
 }
 
-function parsePrimary(src) {
-  if (src === "true") return { kind: "literal", type: "boolean", value: true };
-  if (src === "false") return { kind: "literal", type: "boolean", value: false };
-  if (src === "null") return { kind: "literal", type: "null", value: null };
-  if (/^-?\d+(?:\.\d+)?$/.test(src)) {
-    return { kind: "literal", type: "number", value: Number(src) };
+function parseCallTail(p) {
+  const parts = [];
+  const first = p.take();
+  if (!first || first.type !== "id") throw new Error("call requires a callee");
+  parts.push(first.value);
+  while (p.match(".")) {
+    const next = p.take();
+    if (!next || next.type !== "id") throw new Error("invalid member in callee");
+    parts.push(next.value);
   }
-  const sm = src.match(/^"(.*)"$/s);
-  if (sm) {
-    return {
-      kind: "literal",
-      type: "string",
-      value: sm[1].replace(/\\"/g, '"').replace(/\\\\/g, "\\"),
-    };
+  let args = [];
+  if (p.match("(")) {
+    args = parseArgListFromTokens(p);
+    if (!p.match(")")) throw new Error("expected ) after call args");
   }
-  if (/^[A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)+$/.test(src)) {
-    return { kind: "member", parts: src.split(".") };
+  return { kind: "call", callee: parseCalleeFromParts(parts), args };
+}
+
+function parseCallExpr(src) {
+  return parseExpression(`call ${src}`);
+}
+
+function parsePrimaryAtom(p) {
+  const t = p.peek();
+  if (!t) throw new Error("expected expression");
+  if (t.type === "string") {
+    p.take();
+    return { kind: "literal", type: "string", value: t.value };
   }
-  if (/^[A-Za-z_][\w]*$/.test(src)) {
-    return { kind: "ref", name: src };
+  if (t.type === "number") {
+    p.take();
+    return { kind: "literal", type: "number", value: t.value };
   }
-  throw new Error(`invalid expression: ${JSON.stringify(src)}`);
+  if (t.type === "boolean") {
+    p.take();
+    return { kind: "literal", type: "boolean", value: t.value };
+  }
+  if (t.type === "null") {
+    p.take();
+    return { kind: "literal", type: "null", value: null };
+  }
+  if (t.type === "(") {
+    p.take();
+    const inner = parseOr(p);
+    if (!p.match(")")) throw new Error("expected )");
+    return inner;
+  }
+  if (t.type === "id") {
+    p.take();
+    const parts = [t.value];
+    while (p.peek()?.type === ".") {
+      // look ahead: id.id — but not if next after . is not id
+      p.take();
+      const next = p.take();
+      if (!next || next.type !== "id") throw new Error("expected identifier after .");
+      parts.push(next.value);
+    }
+    if (parts.length === 1) return { kind: "ref", name: parts[0] };
+    return { kind: "member", parts };
+  }
+  throw new Error(`invalid expression atom: ${JSON.stringify(t)}`);
 }
 
 /* ---------------- headers ---------------- */
@@ -374,6 +549,13 @@ function parseDefineHeader(rest) {
     }
   }
 
+  let valueType = null;
+  const valueTypeMatch = header.match(/^(.*?)\s*:\s*([A-Za-z_][\w]*)$/);
+  if (valueTypeMatch) {
+    header = valueTypeMatch[1].trim();
+    valueType = valueTypeMatch[2];
+  }
+
   const tokens = header.split(/\s+/).filter(Boolean);
   if (!tokens.length) throw new Error("empty define");
 
@@ -431,6 +613,7 @@ function parseDefineHeader(rest) {
     implementsList,
     params,
     returnType,
+    valueType,
     initExpr,
   };
 }
@@ -499,7 +682,19 @@ function validateModifiers(kind, modifiers, scope, lineNo) {
 
 function findBodyOwner(stack) {
   for (let i = stack.length - 1; i >= 0; i -= 1) {
-    if (BODY_OWNER_SCOPES.has(stack[i].scope)) return stack[i];
+    const frame = stack[i];
+    if (!BODY_OWNER_SCOPES.has(frame.scope)) continue;
+    if (Array.isArray(frame.bodyRef)) return frame;
+    if (Array.isArray(frame.node?.body)) {
+      return { ...frame, bodyRef: frame.node.body };
+    }
+  }
+  return null;
+}
+
+function findCallableFrame(stack) {
+  for (let i = stack.length - 1; i >= 0; i -= 1) {
+    if (CALLABLE_KINDS.has(stack[i].scope)) return stack[i];
   }
   return null;
 }
@@ -514,10 +709,16 @@ function attachNode(stack, body, node, indent, issues, lineNo) {
   if (indent !== 0 && !owner) {
     issues.push(issue("indented declaration without an owning type", ["D005"], lineNo));
   }
-  // nested define inside callable body
   const bodyOwner = findBodyOwner(stack);
-  if (bodyOwner && indent > bodyOwner.indent && Array.isArray(bodyOwner.node.body)) {
-    bodyOwner.node.body.push(node);
+  if (bodyOwner && indent > bodyOwner.indent && Array.isArray(bodyOwner.bodyRef)) {
+    bodyOwner.bodyRef.push(node);
+    if ((node.kind === "constant" || node.kind === "variable") && bodyOwner.bindings) {
+      bodyOwner.bindings.set(node.name, node.kind);
+    }
+    const callable = findCallableFrame(stack);
+    if (callable?.bindings && (node.kind === "constant" || node.kind === "variable")) {
+      callable.bindings.set(node.name, node.kind);
+    }
     return;
   }
   body.push(node);
@@ -525,17 +726,27 @@ function attachNode(stack, body, node, indent, issues, lineNo) {
 
 function attachStatement(stack, body, stmt, indent, issues, lineNo) {
   const bodyOwner = findBodyOwner(stack);
-  if (!bodyOwner || indent <= bodyOwner.indent) {
+  if (!bodyOwner || indent <= bodyOwner.indent || !Array.isArray(bodyOwner.bodyRef)) {
     issues.push(
-      issue(`${stmt.op} is only valid inside a function, method, or constructor body`, ["F1"], lineNo),
+      issue(
+        `${stmt.op} is only valid inside a function, method, constructor, or if body`,
+        [stmt.op === "if" ? "F10" : "F1"],
+        lineNo,
+      ),
     );
     return;
   }
-  if (!Array.isArray(bodyOwner.node.body)) {
-    issues.push(issue("cannot attach statement to abstract callable", ["F1"], lineNo));
-    return;
+  if (stmt.op === "assign") {
+    const callable = findCallableFrame(stack);
+    const kind = callable?.bindings?.get(stmt.name);
+    if (kind === "constant") {
+      issues.push(
+        issue("cannot assign to constant", ["F2", "D020"], lineNo),
+      );
+      return;
+    }
   }
-  bodyOwner.node.body.push(stmt);
+  bodyOwner.bodyRef.push(stmt);
 }
 
 /* ---------------- main review ---------------- */
@@ -559,10 +770,62 @@ function reviewSource(text) {
 
     const indent = indentWidth(raw);
     const line = raw.trim();
-    while (stack.length && indent <= stack[stack.length - 1].indent) stack.pop();
+    const isElse = line === "else";
+
+    if (isElse) {
+      while (stack.length && stack[stack.length - 1].indent > indent) stack.pop();
+    } else {
+      while (stack.length && indent <= stack[stack.length - 1].indent) stack.pop();
+    }
 
     const scope = stack.length ? stack[stack.length - 1].scope : "module";
     const owner = stack.length ? stack[stack.length - 1].node : null;
+
+    if (isElse) {
+      const frame = stack.length ? stack[stack.length - 1] : null;
+      if (!frame || frame.scope !== "if_then" || frame.indent !== indent) {
+        issues.push(issue("else without matching if", ["F10"], idx));
+        continue;
+      }
+      if (frame.node.else) {
+        issues.push(issue("if already has an else branch", ["F10"], idx));
+        continue;
+      }
+      frame.node.else = [];
+      frame.scope = "if_else";
+      frame.bodyRef = frame.node.else;
+      continue;
+    }
+
+    if (line.startsWith("if ")) {
+      let condition;
+      try {
+        condition = parseExpression(line.slice("if ".length));
+      } catch (err) {
+        issues.push(issue(err.message, ["F10", "F9"], idx));
+        continue;
+      }
+      counters.stmt += 1;
+      const ifNode = {
+        id: `stmt_${counters.stmt}`,
+        op: "if",
+        condition,
+        then: [],
+        else: null,
+      };
+      attachStatement(stack, body, ifNode, indent, issues, idx);
+      // Only push if attach succeeded (node present in some body)
+      const bodyOwner = findBodyOwner(stack);
+      if (bodyOwner && Array.isArray(bodyOwner.bodyRef) && bodyOwner.bodyRef.includes(ifNode)) {
+        stack.push({
+          indent,
+          node: ifNode,
+          scope: "if_then",
+          bodyRef: ifNode.then,
+        });
+      }
+      continue;
+    }
 
     if (line.startsWith("module ")) {
       if (indent !== 0) {
@@ -794,6 +1057,7 @@ function reviewSource(text) {
         implementsList,
         params,
         returnType,
+        valueType,
         initExpr,
       } = parsed;
       issues.push(...validateModifiers(kind, modifiers, scope, idx));
@@ -817,6 +1081,17 @@ function reviewSource(text) {
       if (initExpr && kind !== "variable" && kind !== "constant" && kind !== "property") {
         issues.push(
           issue(`initializer is only valid on variable, constant, or property`, ["F2", "F5"], idx),
+        );
+      }
+
+      if (
+        valueType &&
+        kind !== "property" &&
+        kind !== "variable" &&
+        kind !== "constant"
+      ) {
+        issues.push(
+          issue(`value type annotation is only valid on property, variable, or constant`, ["F5"], idx),
         );
       }
 
@@ -844,14 +1119,15 @@ function reviewSource(text) {
         }
       } else if (kind === "property") {
         if (returnType) {
-          issues.push(issue("property cannot use -> return type; use `: type` later or omit", ["F5"], idx));
+          issues.push(issue("property cannot use -> return type; use `name: type`", ["F5"], idx));
         }
         if (params.length) {
           issues.push(issue("property cannot have parameters", ["F5"], idx));
         }
-        // optional typed property via name only for now; defaults via initExpr
+        if (valueType) node.type = valueType;
         if (initExpr) node.init = initExpr;
       } else if (kind === "variable" || kind === "constant") {
+        if (valueType) node.type = valueType;
         if (initExpr) node.init = initExpr;
       }
 
@@ -862,7 +1138,13 @@ function reviewSource(text) {
       if (kind === "class") stack.push({ indent, node, scope: "class" });
       else if (kind === "interface") stack.push({ indent, node, scope: "interface" });
       else if (CALLABLE_KINDS.has(kind) && node.body !== null) {
-        stack.push({ indent, node, scope: kind });
+        stack.push({
+          indent,
+          node,
+          scope: kind,
+          bodyRef: node.body,
+          bindings: new Map(),
+        });
       }
       continue;
     }

@@ -96,6 +96,7 @@ Start here:
 - [docs/planning/experiment-v0.md](docs/planning/experiment-v0.md)
 - [docs/planning/keyword-dsl-v0.md](docs/planning/keyword-dsl-v0.md)
 - [docs/planning/keyword-matrix-v0.md](docs/planning/keyword-matrix-v0.md)
+- [docs/planning/target-mapping.md](docs/planning/target-mapping.md)
 - Checker: `node tools/lira_keyword_dsl.mjs check`
 - Test pipeline: `npm run generate` then `npm test` (see [test/README.md](test/README.md))
 - Optional Cursor skill: `.cursor/skills/lira-keyword-dsl/`

@@ -21,6 +21,12 @@ function emitPyType(t) {
   return t;
 }
 
+function emitTsBinaryOp(op) {
+  if (op === "and") return "&&";
+  if (op === "or") return "||";
+  return op;
+}
+
 function emitTsExpr(expr) {
   if (!expr) return "undefined";
   switch (expr.kind) {
@@ -32,6 +38,11 @@ function emitTsExpr(expr) {
       return expr.name;
     case "member":
       return expr.parts.join(".");
+    case "unary":
+      if (expr.op === "not") return `!(${emitTsExpr(expr.expr)})`;
+      return `${expr.op}(${emitTsExpr(expr.expr)})`;
+    case "binary":
+      return `(${emitTsExpr(expr.left)} ${emitTsBinaryOp(expr.op)} ${emitTsExpr(expr.right)})`;
     case "call": {
       const callee =
         expr.callee.kind === "member"
@@ -63,6 +74,11 @@ function emitPyExpr(expr) {
       const parts = expr.parts.map((p) => (p === "this" ? "self" : p));
       return parts.join(".");
     }
+    case "unary":
+      if (expr.op === "not") return `(not ${emitPyExpr(expr.expr)})`;
+      return `(${expr.op}${emitPyExpr(expr.expr)})`;
+    case "binary":
+      return `(${emitPyExpr(expr.left)} ${expr.op} ${emitPyExpr(expr.right)})`;
     case "call": {
       let callee;
       if (expr.callee.kind === "member") {
@@ -109,6 +125,15 @@ function emitTsStmt(stmt, indent) {
   if (stmt.op === "call") {
     return `${pad}${emitTsExpr({ kind: "call", callee: stmt.callee, args: stmt.args })};`;
   }
+  if (stmt.op === "if") {
+    const thenBody = emitTsBody(stmt.then, indent + 1);
+    let out = `${pad}if (${emitTsExpr(stmt.condition)}) {\n${thenBody}${pad}}`;
+    if (stmt.else) {
+      const elseBody = emitTsBody(stmt.else, indent + 1);
+      out += ` else {\n${elseBody}${pad}}`;
+    }
+    return out;
+  }
   if (stmt.op === "define") {
     return emitTsNestedDefine(stmt, indent);
   }
@@ -131,6 +156,15 @@ function emitPyStmt(stmt, indent) {
   if (stmt.op === "call") {
     return `${pad}${emitPyExpr({ kind: "call", callee: stmt.callee, args: stmt.args })}`;
   }
+  if (stmt.op === "if") {
+    const thenBody = emitPyBody(stmt.then, indent + 1);
+    let out = `${pad}if ${emitPyExpr(stmt.condition)}:\n${thenBody}`;
+    if (stmt.else) {
+      const elseBody = emitPyBody(stmt.else, indent + 1);
+      out += `${pad}else:\n${elseBody}`;
+    }
+    return out.replace(/\n$/, "");
+  }
   if (stmt.op === "define") {
     return emitPyNestedDefine(stmt, indent);
   }
@@ -149,13 +183,14 @@ function emitPyBody(body, indent) {
 
 function emitTsNestedDefine(node, indent) {
   const pad = "  ".repeat(indent);
+  const type = node.type ? `: ${emitTsType(node.type)}` : "";
   if (node.kind === "variable") {
     const init = node.init ? ` = ${emitTsExpr(node.init)}` : "";
-    return `${pad}let ${node.name}${init};`;
+    return `${pad}let ${node.name}${type}${init};`;
   }
   if (node.kind === "constant") {
     const init = node.init ? ` = ${emitTsExpr(node.init)}` : "";
-    return `${pad}const ${node.name}${init};`;
+    return `${pad}const ${node.name}${type}${init};`;
   }
   return `${pad}/* nested ${node.kind} */`;
 }
@@ -198,8 +233,9 @@ function emitTsMember(member, indent) {
     return `${pad}${vis}${st}${asy}${member.name}(${params}): ${ret} {\n${body}${pad}}`;
   }
   if (member.kind === "property") {
+    const type = member.type ? `: ${emitTsType(member.type)}` : "";
     const init = member.init ? ` = ${emitTsExpr(member.init)}` : "";
-    return `${pad}${vis}${st}${ro}${member.name}: unknown${init};`;
+    return `${pad}${vis}${st}${ro}${member.name}${type}${init};`;
   }
   return `${pad}// unsupported member kind: ${member.kind}`;
 }
@@ -247,13 +283,15 @@ function emitTsDecl(node) {
   }
   if (node.kind === "variable") {
     const exp = mod(node, "export") ? "export " : "";
+    const type = node.type ? `: ${emitTsType(node.type)}` : "";
     const init = node.init ? ` = ${emitTsExpr(node.init)}` : "";
-    return `${exp}let ${node.name}${init};`;
+    return `${exp}let ${node.name}${type}${init};`;
   }
   if (node.kind === "constant") {
     const exp = mod(node, "export") ? "export " : "";
+    const type = node.type ? `: ${emitTsType(node.type)}` : "";
     const init = node.init ? ` = ${emitTsExpr(node.init)}` : "";
-    return `${exp}const ${node.name}${init};`;
+    return `${exp}const ${node.name}${type}${init};`;
   }
   return `// unsupported define kind: ${node.kind}`;
 }
@@ -294,10 +332,11 @@ function emitPyMember(member, indent, { protocol = false } = {}) {
     return `${deco}${pad}${asy}def ${member.name}(${params}) -> ${ret}:\n${body}`;
   }
   if (member.kind === "property") {
+    const type = member.type ? `: ${emitPyType(member.type)}` : "";
     if (member.init) {
-      return `${pad}${member.name}: object = ${emitPyExpr(member.init)}`;
+      return `${pad}${member.name}${type} = ${emitPyExpr(member.init)}`;
     }
-    return `${pad}${member.name}: object`;
+    return `${pad}${member.name}${type}`;
   }
   return `${pad}# unsupported member kind: ${member.kind}`;
 }

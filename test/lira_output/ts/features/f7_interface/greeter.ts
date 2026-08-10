@@ -4,7 +4,7 @@ export interface Greeter {
 }
 
 export class Person implements Greeter {
-  public name: unknown;
+  public name: string;
   constructor(name: string) {
     this.name = name;
   }

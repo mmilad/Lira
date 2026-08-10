@@ -1,10 +1,10 @@
 # module notes_models
 class Note:
-    id: object
+    id
 
-    title: object
+    title
 
-    body: object
+    body
 
     def __init__(self, id: str, title: str) -> None:
         self.id = id

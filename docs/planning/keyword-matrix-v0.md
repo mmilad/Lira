@@ -49,7 +49,8 @@ Related: [keyword-dsl-v0.md](keyword-dsl-v0.md), [decision-log.md](decision-log.
 | `define constructor` | class | module, interface |
 | `define property` | class | module top-level |
 | `define variable` / `define constant` | module or callable body | n/a |
-| `return` / `assign` / `set` / `call` | callable body | module top-level |
+| `return` / `assign` / `set` / `call` / `if` | callable body or nested if body | module top-level |
+| `else` | paired with `if` at same indent | anywhere else |
 | `abstract` on class | module | member |
 | `static` | class member callable/property | module top-level function |
 

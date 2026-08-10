@@ -1,0 +1,8 @@
+module f9_operators
+
+define export function calc(a: number, b: number) -> number
+  define variable sum = a + b * 2
+  define variable ok = sum >= 10 and not false
+  if ok
+    return sum
+  return a - b

@@ -48,6 +48,10 @@ Initial strategy: **at most three backends** so the shared backend API is design
 
 `module` in Lira is semantic, not TypeScript/ESM syntax. It names a portable unit of declarations + imports/exports. Each backend decides file layout, package exports, and naming conventions while preserving the same public API intent.
 
+### Target mapping
+
+Cross-language type/member concepts are recorded in [planning/target-mapping.md](planning/target-mapping.md) with mapping strength (`exact` / `compatible` / `unsupported`). Emitters must not invent mappings missing from that table.
+
 ### Source map
 
 Tracks which generated source ranges originate from which Lira operations. This should make compiler and runtime errors traceable back to the semantic representation.

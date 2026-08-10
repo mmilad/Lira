@@ -1,10 +1,10 @@
 # module f5_members
 class Account:
-    name: object = "anon"
+    name = "anon"
 
-    secret: object
+    secret
 
-    version: object = 1
+    version = 1
 
     def ping(self) -> str:
         return "ok"
