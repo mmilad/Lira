@@ -1,6 +1,6 @@
 // module notes_store
-export abstract class NoteStore {
-  abstract get(): void;
-  abstract save(): void;
-  abstract list(): void;
+export interface NoteStore {
+  get(id: string): Note;
+  save(note: Note): Note;
+  list(): Note;
 }

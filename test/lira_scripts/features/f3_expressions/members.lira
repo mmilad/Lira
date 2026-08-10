@@ -1,0 +1,4 @@
+module f3_expressions
+
+define export function readTitle(note: Note) -> string
+  return note.title

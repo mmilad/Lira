@@ -1,0 +1,90 @@
+{
+  "module": {
+    "id": "mod_f6_constructor",
+    "op": "module",
+    "name": "f6_constructor"
+  },
+  "body": [
+    {
+      "id": "decl_User",
+      "op": "define",
+      "kind": "class",
+      "name": "User",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_name",
+          "op": "define",
+          "kind": "property",
+          "name": "name",
+          "modifiers": {
+            "public": true
+          }
+        },
+        {
+          "id": "decl_User_constructor",
+          "op": "define",
+          "kind": "constructor",
+          "name": "constructor",
+          "modifiers": {},
+          "params": [
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "body": [
+            {
+              "id": "stmt_1",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "name"
+                ]
+              },
+              "value": {
+                "kind": "ref",
+                "name": "name"
+              }
+            },
+            {
+              "id": "stmt_2",
+              "op": "return",
+              "value": null
+            }
+          ]
+        },
+        {
+          "id": "decl_greet",
+          "op": "define",
+          "kind": "method",
+          "name": "greet",
+          "modifiers": {
+            "public": true
+          },
+          "params": [],
+          "returns": "string",
+          "body": [
+            {
+              "id": "stmt_3",
+              "op": "return",
+              "value": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "name"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -50,13 +50,100 @@
           }
         },
         {
+          "id": "decl_NoteService_constructor",
+          "op": "define",
+          "kind": "constructor",
+          "name": "constructor",
+          "modifiers": {},
+          "params": [
+            {
+              "name": "store",
+              "type": "NoteStore"
+            }
+          ],
+          "body": [
+            {
+              "id": "stmt_1",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "store"
+                ]
+              },
+              "value": {
+                "kind": "ref",
+                "name": "store"
+              }
+            }
+          ]
+        },
+        {
           "id": "decl_create",
           "op": "define",
           "kind": "method",
           "name": "create",
-          "modifiers": {},
-          "params": [],
-          "body": []
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "title",
+              "type": "string"
+            }
+          ],
+          "returns": "Note",
+          "body": [
+            {
+              "id": "decl_note",
+              "op": "define",
+              "kind": "variable",
+              "name": "note",
+              "modifiers": {},
+              "init": {
+                "kind": "construct",
+                "type": "Note",
+                "args": [
+                  {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "1"
+                  },
+                  {
+                    "kind": "ref",
+                    "name": "title"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "stmt_2",
+              "op": "call",
+              "callee": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "store",
+                  "save"
+                ]
+              },
+              "args": [
+                {
+                  "kind": "ref",
+                  "name": "note"
+                }
+              ]
+            },
+            {
+              "id": "stmt_3",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "note"
+              }
+            }
+          ]
         },
         {
           "id": "decl_load",
@@ -64,19 +151,68 @@
           "kind": "method",
           "name": "load",
           "modifiers": {
-            "async": true
+            "async": true,
+            "public": true
           },
-          "params": [],
-          "body": []
+          "params": [
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "returns": "Note",
+          "body": [
+            {
+              "id": "stmt_4",
+              "op": "return",
+              "value": {
+                "kind": "call",
+                "callee": {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "store",
+                    "get"
+                  ]
+                },
+                "args": [
+                  {
+                    "kind": "ref",
+                    "name": "id"
+                  }
+                ]
+              }
+            }
+          ]
         },
         {
           "id": "decl_list",
           "op": "define",
           "kind": "method",
           "name": "list",
-          "modifiers": {},
+          "modifiers": {
+            "public": true
+          },
           "params": [],
-          "body": []
+          "returns": "Note",
+          "body": [
+            {
+              "id": "stmt_5",
+              "op": "return",
+              "value": {
+                "kind": "call",
+                "callee": {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "store",
+                    "list"
+                  ]
+                },
+                "args": []
+              }
+            }
+          ]
         }
       ]
     }

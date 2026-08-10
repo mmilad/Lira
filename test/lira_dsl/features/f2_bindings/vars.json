@@ -1,0 +1,64 @@
+{
+  "module": {
+    "id": "mod_f2_bindings",
+    "op": "module",
+    "name": "f2_bindings"
+  },
+  "body": [
+    {
+      "id": "decl_demo",
+      "op": "define",
+      "kind": "function",
+      "name": "demo",
+      "modifiers": {
+        "export": true
+      },
+      "params": [],
+      "returns": "number",
+      "body": [
+        {
+          "id": "decl_label",
+          "op": "define",
+          "kind": "constant",
+          "name": "label",
+          "modifiers": {},
+          "init": {
+            "kind": "literal",
+            "type": "string",
+            "value": "n"
+          }
+        },
+        {
+          "id": "decl_count",
+          "op": "define",
+          "kind": "variable",
+          "name": "count",
+          "modifiers": {},
+          "init": {
+            "kind": "literal",
+            "type": "number",
+            "value": 1
+          }
+        },
+        {
+          "id": "stmt_1",
+          "op": "assign",
+          "name": "count",
+          "value": {
+            "kind": "literal",
+            "type": "number",
+            "value": 2
+          }
+        },
+        {
+          "id": "stmt_2",
+          "op": "return",
+          "value": {
+            "kind": "ref",
+            "name": "count"
+          }
+        }
+      ]
+    }
+  ]
+}

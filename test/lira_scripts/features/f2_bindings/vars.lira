@@ -1,0 +1,7 @@
+module f2_bindings
+
+define export function demo() -> number
+  define constant label = "n"
+  define variable count = 1
+  assign count = 2
+  return count

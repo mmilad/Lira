@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
- * Reusable Lira v0 keyword→DSL checker (Node, zero deps).
+ * Lira keyword→DSL parser / validator (Node, zero deps).
+ *
+ * Stages: line scan → statement parse → scope tree → matrix validate → IR
  *
  * Usage:
  *   node tools/lira_keyword_dsl.mjs review path/to/file.lira
@@ -14,8 +16,10 @@ import { fileURLToPath } from "node:url";
 
 const KINDS = new Set([
   "class",
+  "interface",
   "function",
   "method",
+  "constructor",
   "property",
   "variable",
   "constant",
@@ -31,16 +35,20 @@ const MODIFIERS = new Set([
   "readonly",
 ]);
 const VISIBILITY = new Set(["public", "protected", "private"]);
-const MEMBER_KINDS = new Set(["method", "property"]);
-const MODULE_ONLY_KINDS = new Set(["class", "function"]);
+const MEMBER_KINDS = new Set(["method", "property", "constructor"]);
+const MODULE_ONLY_KINDS = new Set(["class", "function", "interface"]);
+const CALLABLE_KINDS = new Set(["function", "method", "constructor"]);
+const BODY_OWNER_SCOPES = new Set(["function", "method", "constructor"]);
 
 /** @type {Record<string, Record<string, "allowed" | "invalid" | "deferred">>} */
 const MATRIX = {
   export: {
     module: "invalid",
     class: "allowed",
+    interface: "allowed",
     function: "allowed",
     method: "invalid",
+    constructor: "invalid",
     property: "invalid",
     variable: "allowed",
     constant: "allowed",
@@ -48,8 +56,10 @@ const MATRIX = {
   abstract: {
     module: "invalid",
     class: "allowed",
+    interface: "invalid",
     function: "invalid",
     method: "allowed",
+    constructor: "invalid",
     property: "invalid",
     variable: "invalid",
     constant: "invalid",
@@ -57,8 +67,10 @@ const MATRIX = {
   static: {
     module: "invalid",
     class: "invalid",
+    interface: "invalid",
     function: "invalid",
     method: "allowed",
+    constructor: "invalid",
     property: "allowed",
     variable: "deferred",
     constant: "deferred",
@@ -66,8 +78,10 @@ const MATRIX = {
   async: {
     module: "invalid",
     class: "invalid",
+    interface: "invalid",
     function: "allowed",
     method: "allowed",
+    constructor: "invalid",
     property: "invalid",
     variable: "invalid",
     constant: "invalid",
@@ -75,8 +89,10 @@ const MATRIX = {
   public: {
     module: "invalid",
     class: "invalid",
+    interface: "invalid",
     function: "invalid",
     method: "allowed",
+    constructor: "allowed",
     property: "allowed",
     variable: "invalid",
     constant: "invalid",
@@ -84,8 +100,10 @@ const MATRIX = {
   protected: {
     module: "invalid",
     class: "invalid",
+    interface: "invalid",
     function: "invalid",
     method: "allowed",
+    constructor: "allowed",
     property: "allowed",
     variable: "invalid",
     constant: "invalid",
@@ -93,8 +111,10 @@ const MATRIX = {
   private: {
     module: "invalid",
     class: "invalid",
+    interface: "invalid",
     function: "invalid",
     method: "allowed",
+    constructor: "allowed",
     property: "allowed",
     variable: "invalid",
     constant: "invalid",
@@ -102,8 +122,10 @@ const MATRIX = {
   readonly: {
     module: "invalid",
     class: "invalid",
+    interface: "invalid",
     function: "invalid",
     method: "invalid",
+    constructor: "invalid",
     property: "allowed",
     variable: "allowed",
     constant: "invalid",
@@ -119,6 +141,132 @@ function issue(message, rules = [], line = null) {
 function indentWidth(line) {
   return line.length - line.replace(/^ */, "").length;
 }
+
+function makeId(prefix, name) {
+  return `${prefix}_${String(name).replace(/[^\w]/g, "_")}`;
+}
+
+/* ---------------- expressions ---------------- */
+
+function parseExpression(input) {
+  const src = input.trim();
+  if (!src) throw new Error("empty expression");
+
+  // construct Type(args...)
+  let m = src.match(/^construct\s+([A-Za-z_][\w]*)\s*(?:\((.*)\))?$/s);
+  if (m) {
+    return {
+      kind: "construct",
+      type: m[1],
+      args: parseArgList(m[2] ?? ""),
+    };
+  }
+
+  // call callee(args...)  — only when prefixed with call
+  m = src.match(/^call\s+(.+)$/s);
+  if (m) {
+    return parseCallExpr(m[1].trim());
+  }
+
+  // bare call-looking: name(... ) or member(...) — used inside arg lists? keep as call shape when parens present
+  m = src.match(/^(.+?)\((.*)\)$/s);
+  if (m && !/^["']/.test(src) && !/^(true|false|null)$/.test(src)) {
+    const head = m[1].trim();
+    if (/^[A-Za-z_][\w.]*(?:\.[A-Za-z_][\w]*)*$/.test(head)) {
+      return {
+        kind: "call",
+        callee: parseCallee(head),
+        args: parseArgList(m[2]),
+      };
+    }
+  }
+
+  return parsePrimary(src);
+}
+
+function parseCallExpr(src) {
+  const m = src.match(/^(.+?)\((.*)\)$/s);
+  if (m) {
+    return {
+      kind: "call",
+      callee: parseCallee(m[1].trim()),
+      args: parseArgList(m[2]),
+    };
+  }
+  // call without args: call user.greet
+  return {
+    kind: "call",
+    callee: parseCallee(src),
+    args: [],
+  };
+}
+
+function parseCallee(src) {
+  const parts = src.split(".").map((p) => p.trim());
+  if (!parts.length || parts.some((p) => !/^[A-Za-z_][\w]*$/.test(p))) {
+    throw new Error(`invalid callee: ${JSON.stringify(src)}`);
+  }
+  if (parts.length === 1) return { kind: "ref", name: parts[0] };
+  return { kind: "member", parts };
+}
+
+function parseArgList(chunk) {
+  const text = chunk.trim();
+  if (!text) return [];
+  const args = [];
+  let depth = 0;
+  let start = 0;
+  let inStr = null;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    if (inStr) {
+      if (ch === "\\" && i + 1 < text.length) {
+        i += 1;
+        continue;
+      }
+      if (ch === inStr) inStr = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      inStr = ch;
+      continue;
+    }
+    if (ch === "(") depth += 1;
+    else if (ch === ")") depth -= 1;
+    else if (ch === "," && depth === 0) {
+      args.push(parseExpression(text.slice(start, i)));
+      start = i + 1;
+    }
+  }
+  args.push(parseExpression(text.slice(start)));
+  return args;
+}
+
+function parsePrimary(src) {
+  if (src === "true") return { kind: "literal", type: "boolean", value: true };
+  if (src === "false") return { kind: "literal", type: "boolean", value: false };
+  if (src === "null") return { kind: "literal", type: "null", value: null };
+  if (/^-?\d+(?:\.\d+)?$/.test(src)) {
+    return { kind: "literal", type: "number", value: Number(src) };
+  }
+  const sm = src.match(/^"(.*)"$/s);
+  if (sm) {
+    return {
+      kind: "literal",
+      type: "string",
+      value: sm[1].replace(/\\"/g, '"').replace(/\\\\/g, "\\"),
+    };
+  }
+  if (/^[A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)+$/.test(src)) {
+    return { kind: "member", parts: src.split(".") };
+  }
+  if (/^[A-Za-z_][\w]*$/.test(src)) {
+    return { kind: "ref", name: src };
+  }
+  throw new Error(`invalid expression: ${JSON.stringify(src)}`);
+}
+
+/* ---------------- headers ---------------- */
 
 function parseImportItems(chunk) {
   const items = [];
@@ -140,8 +288,93 @@ function parseImportItems(chunk) {
   return items;
 }
 
+function splitParamsAndRest(text) {
+  // returns { beforeParams, paramsText, afterParams } if (...) present at top level
+  const open = text.indexOf("(");
+  if (open === -1) return null;
+  let depth = 0;
+  for (let i = open; i < text.length; i += 1) {
+    if (text[i] === "(") depth += 1;
+    else if (text[i] === ")") {
+      depth -= 1;
+      if (depth === 0) {
+        return {
+          before: text.slice(0, open).trim(),
+          paramsText: text.slice(open + 1, i).trim(),
+          after: text.slice(i + 1).trim(),
+        };
+      }
+    }
+  }
+  throw new Error("unclosed parameter list");
+}
+
+function parseParams(paramsText) {
+  if (!paramsText) return [];
+  return paramsText.split(",").map((raw) => {
+    const part = raw.trim();
+    const m = part.match(/^([A-Za-z_][\w]*)\s*:\s*([A-Za-z_][\w]*)$/);
+    if (!m) throw new Error(`invalid parameter: ${JSON.stringify(part)}`);
+    return { name: m[1], type: m[2] };
+  });
+}
+
 function parseDefineHeader(rest) {
-  const tokens = rest.split(/\s+/).filter(Boolean);
+  let working = rest.trim();
+  let initExpr = null;
+  const eq = working.indexOf("=");
+  // only treat = as init when not inside quotes; simple scan
+  if (eq !== -1) {
+    let inStr = null;
+    let depth = 0;
+    for (let i = 0; i < working.length; i += 1) {
+      const ch = working[i];
+      if (inStr) {
+        if (ch === "\\" && i + 1 < working.length) {
+          i += 1;
+          continue;
+        }
+        if (ch === inStr) inStr = null;
+        continue;
+      }
+      if (ch === '"' || ch === "'") {
+        inStr = ch;
+        continue;
+      }
+      if (ch === "(") depth += 1;
+      else if (ch === ")") depth -= 1;
+      else if (ch === "=" && depth === 0) {
+        initExpr = parseExpression(working.slice(i + 1));
+        working = working.slice(0, i).trim();
+        break;
+      }
+    }
+  }
+
+  let params = [];
+  let returnType = null;
+  const split = splitParamsAndRest(working);
+  let header = working;
+  if (split) {
+    header = split.before;
+    params = parseParams(split.paramsText);
+    if (split.after.startsWith("->")) {
+      returnType = split.after.slice(2).trim();
+      if (!/^[A-Za-z_][\w]*$/.test(returnType)) {
+        throw new Error(`invalid return type: ${JSON.stringify(returnType)}`);
+      }
+    } else if (split.after) {
+      throw new Error(`unexpected tokens after parameters: ${JSON.stringify(split.after)}`);
+    }
+  } else {
+    const arrow = header.match(/^(.*?)\s*->\s*([A-Za-z_][\w]*)$/);
+    if (arrow) {
+      header = arrow[1].trim();
+      returnType = arrow[2];
+    }
+  }
+
+  const tokens = header.split(/\s+/).filter(Boolean);
   if (!tokens.length) throw new Error("empty define");
 
   const modifiers = new Set();
@@ -157,8 +390,14 @@ function parseDefineHeader(rest) {
     );
   }
   const kind = tokens[i++];
-  if (i >= tokens.length) throw new Error(`${kind} declaration is missing a name`);
-  const name = tokens[i++];
+
+  let name;
+  if (kind === "constructor") {
+    name = "constructor";
+  } else {
+    if (i >= tokens.length) throw new Error(`${kind} declaration is missing a name`);
+    name = tokens[i++];
+  }
 
   let extendsName = null;
   let implementsList = [];
@@ -184,13 +423,27 @@ function parseDefineHeader(rest) {
     throw new Error(`unexpected token in define header: ${JSON.stringify(tokens[i])}`);
   }
 
-  return { modifiers, kind, name, extendsName, implementsList };
+  return {
+    modifiers,
+    kind,
+    name,
+    extendsName,
+    implementsList,
+    params,
+    returnType,
+    initExpr,
+  };
 }
 
 function validateModifiers(kind, modifiers, scope, lineNo) {
   const issues = [];
+  const row = MATRIX;
   for (const mod of [...modifiers].sort()) {
-    const status = MATRIX[mod][kind];
+    const status = row[mod]?.[kind];
+    if (!status) {
+      issues.push(issue(`${mod} is not defined for ${kind}`, ["keyword-matrix-v0"], lineNo));
+      continue;
+    }
     if (status === "invalid") {
       issues.push(issue(`${mod} is invalid on ${kind}`, [`keyword-matrix-v0 ${mod}/${kind}`], lineNo));
     } else if (status === "deferred") {
@@ -204,9 +457,9 @@ function validateModifiers(kind, modifiers, scope, lineNo) {
     if (mod === "export" && scope !== "module") {
       issues.push(issue("export is only valid at module/exportable scope", ["D006"], lineNo));
     }
-    if (VISIBILITY.has(mod) && scope !== "class") {
+    if (VISIBILITY.has(mod) && scope !== "class" && scope !== "interface") {
       issues.push(
-        issue("visibility modifiers are only valid on class members", ["D007"], lineNo),
+        issue("visibility modifiers are only valid on type members", ["D007"], lineNo),
       );
     }
   }
@@ -218,13 +471,17 @@ function validateModifiers(kind, modifiers, scope, lineNo) {
       ], lineNo),
     );
   }
-  if (MEMBER_KINDS.has(kind) && scope !== "class") {
+  if (MEMBER_KINDS.has(kind) && scope !== "class" && scope !== "interface") {
     if (kind === "method") {
       issues.push(
         issue("define method is invalid at module scope; use define function", [
           "D009",
           "keyword-matrix-v0 scope validity",
         ], lineNo),
+      );
+    } else if (kind === "constructor") {
+      issues.push(
+        issue("define constructor is only valid inside a class", ["F6", "keyword-matrix-v0"], lineNo),
       );
     } else {
       issues.push(
@@ -234,12 +491,54 @@ function validateModifiers(kind, modifiers, scope, lineNo) {
       );
     }
   }
+  if (kind === "constructor" && scope === "interface") {
+    issues.push(issue("constructor is invalid inside interface", ["F7"], lineNo));
+  }
   return issues;
 }
 
-function makeId(prefix, name) {
-  return `${prefix}_${name.replace(/[^\w]/g, "_")}`;
+function findBodyOwner(stack) {
+  for (let i = stack.length - 1; i >= 0; i -= 1) {
+    if (BODY_OWNER_SCOPES.has(stack[i].scope)) return stack[i];
+  }
+  return null;
 }
+
+function attachNode(stack, body, node, indent, issues, lineNo) {
+  const owner = stack.length ? stack[stack.length - 1].node : null;
+  const ownerFrame = stack.length ? stack[stack.length - 1] : null;
+  if (owner && Array.isArray(owner.members) && ownerFrame && indent > ownerFrame.indent) {
+    owner.members.push(node);
+    return;
+  }
+  if (indent !== 0 && !owner) {
+    issues.push(issue("indented declaration without an owning type", ["D005"], lineNo));
+  }
+  // nested define inside callable body
+  const bodyOwner = findBodyOwner(stack);
+  if (bodyOwner && indent > bodyOwner.indent && Array.isArray(bodyOwner.node.body)) {
+    bodyOwner.node.body.push(node);
+    return;
+  }
+  body.push(node);
+}
+
+function attachStatement(stack, body, stmt, indent, issues, lineNo) {
+  const bodyOwner = findBodyOwner(stack);
+  if (!bodyOwner || indent <= bodyOwner.indent) {
+    issues.push(
+      issue(`${stmt.op} is only valid inside a function, method, or constructor body`, ["F1"], lineNo),
+    );
+    return;
+  }
+  if (!Array.isArray(bodyOwner.node.body)) {
+    issues.push(issue("cannot attach statement to abstract callable", ["F1"], lineNo));
+    return;
+  }
+  bodyOwner.node.body.push(stmt);
+}
+
+/* ---------------- main review ---------------- */
 
 function reviewSource(text) {
   const issues = [];
@@ -247,7 +546,7 @@ function reviewSource(text) {
   const body = [];
   /** @type {{indent: number, node: any, scope: string}[]} */
   const stack = [];
-  const counters = { imp: 0, exp: 0 };
+  const counters = { imp: 0, exp: 0, stmt: 0 };
 
   const lines = text.split(/\r?\n/);
   for (let idx = 1; idx <= lines.length; idx += 1) {
@@ -372,6 +671,101 @@ function reviewSource(text) {
       continue;
     }
 
+    if (line.startsWith("return")) {
+      if (line !== "return" && !line.startsWith("return ")) {
+        issues.push(issue(`invalid return statement: ${line}`, ["F1"], idx));
+        continue;
+      }
+      counters.stmt += 1;
+      let value = null;
+      if (line.startsWith("return ")) {
+        try {
+          value = parseExpression(line.slice("return ".length));
+        } catch (err) {
+          issues.push(issue(err.message, ["F3"], idx));
+          continue;
+        }
+      }
+      attachStatement(
+        stack,
+        body,
+        { id: `stmt_${counters.stmt}`, op: "return", value },
+        indent,
+        issues,
+        idx,
+      );
+      continue;
+    }
+
+    if (line.startsWith("assign ")) {
+      const m = line.match(/^assign\s+([A-Za-z_][\w]*)\s*=\s*(.+)$/);
+      if (!m) {
+        issues.push(issue(`invalid assign syntax: ${line}`, ["F2"], idx));
+        continue;
+      }
+      try {
+        const value = parseExpression(m[2]);
+        counters.stmt += 1;
+        attachStatement(
+          stack,
+          body,
+          { id: `stmt_${counters.stmt}`, op: "assign", name: m[1], value },
+          indent,
+          issues,
+          idx,
+        );
+      } catch (err) {
+        issues.push(issue(err.message, ["F2", "F3"], idx));
+      }
+      continue;
+    }
+
+    if (line.startsWith("set ")) {
+      const m = line.match(/^set\s+([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)+)\s*=\s*(.+)$/);
+      if (!m) {
+        issues.push(issue(`invalid set syntax: ${line}`, ["F6"], idx));
+        continue;
+      }
+      try {
+        const value = parseExpression(m[2]);
+        counters.stmt += 1;
+        attachStatement(
+          stack,
+          body,
+          {
+            id: `stmt_${counters.stmt}`,
+            op: "set",
+            target: { kind: "member", parts: m[1].split(".") },
+            value,
+          },
+          indent,
+          issues,
+          idx,
+        );
+      } catch (err) {
+        issues.push(issue(err.message, ["F6", "F3"], idx));
+      }
+      continue;
+    }
+
+    if (line.startsWith("call ")) {
+      try {
+        const expr = parseCallExpr(line.slice("call ".length).trim());
+        counters.stmt += 1;
+        attachStatement(
+          stack,
+          body,
+          { id: `stmt_${counters.stmt}`, op: "call", callee: expr.callee, args: expr.args },
+          indent,
+          issues,
+          idx,
+        );
+      } catch (err) {
+        issues.push(issue(err.message, ["F4"], idx));
+      }
+      continue;
+    }
+
     if (line.startsWith("define ")) {
       const rest = line.slice("define ".length).trim();
       let parsed;
@@ -392,11 +786,22 @@ function reviewSource(text) {
         continue;
       }
 
-      const { modifiers, kind, name, extendsName, implementsList } = parsed;
+      const {
+        modifiers,
+        kind,
+        name,
+        extendsName,
+        implementsList,
+        params,
+        returnType,
+        initExpr,
+      } = parsed;
       issues.push(...validateModifiers(kind, modifiers, scope, idx));
 
       if (kind === "method" && modifiers.has("abstract")) {
-        if (!owner || owner.kind !== "class" || !owner.modifiers?.abstract) {
+        if (scope === "interface") {
+          // ok — interface methods are abstract-like
+        } else if (!owner || owner.kind !== "class" || !owner.modifiers?.abstract) {
           issues.push(
             issue("abstract method requires an abstract class owner", [
               "keyword-matrix-v0 abstract method note",
@@ -405,39 +810,91 @@ function reviewSource(text) {
         }
       }
 
+      if (kind === "method" && scope === "interface" && !modifiers.has("abstract")) {
+        // treat as abstract-like; body must be null
+      }
+
+      if (initExpr && kind !== "variable" && kind !== "constant" && kind !== "property") {
+        issues.push(
+          issue(`initializer is only valid on variable, constant, or property`, ["F2", "F5"], idx),
+        );
+      }
+
       const node = {
-        id: makeId("decl", name),
+        id: makeId("decl", name === "constructor" ? `${owner?.name || "x"}_constructor` : name),
         op: "define",
         kind,
         name,
         modifiers: Object.fromEntries([...modifiers].sort().map((m) => [m, true])),
       };
-      if (kind === "class") {
+
+      if (kind === "class" || kind === "interface") {
         node.extends = extendsName;
         node.implements = implementsList;
         node.members = [];
-      } else if (kind === "function" || kind === "method") {
-        node.params = [];
-        node.body = modifiers.has("abstract") ? null : [];
+      } else if (CALLABLE_KINDS.has(kind)) {
+        node.params = params;
+        if (returnType) node.returns = returnType;
+        const abstractLike =
+          modifiers.has("abstract") || (scope === "interface" && kind === "method");
+        node.body = abstractLike ? null : [];
+        if (scope === "interface" && kind === "method" && node.body !== null) {
+          // force null
+          node.body = null;
+        }
+      } else if (kind === "property") {
+        if (returnType) {
+          issues.push(issue("property cannot use -> return type; use `: type` later or omit", ["F5"], idx));
+        }
+        if (params.length) {
+          issues.push(issue("property cannot have parameters", ["F5"], idx));
+        }
+        // optional typed property via name only for now; defaults via initExpr
+        if (initExpr) node.init = initExpr;
+      } else if (kind === "variable" || kind === "constant") {
+        if (initExpr) node.init = initExpr;
       }
 
-      if (owner && Array.isArray(owner.members) && indent > stack[stack.length - 1].indent) {
-        owner.members.push(node);
-      } else {
-        if (indent !== 0 && !owner) {
-          issues.push(issue("indented declaration without an owning class", ["D005"], idx));
-        }
-        body.push(node);
-      }
+      // interface method with body statements later will fail when attaching
+
+      attachNode(stack, body, node, indent, issues, idx);
 
       if (kind === "class") stack.push({ indent, node, scope: "class" });
+      else if (kind === "interface") stack.push({ indent, node, scope: "interface" });
+      else if (CALLABLE_KINDS.has(kind) && node.body !== null) {
+        stack.push({ indent, node, scope: kind });
+      }
       continue;
     }
 
-    issues.push(issue(`unsupported v0 keyword statement: ${line}`, ["keyword-dsl-v0"], idx));
+    issues.push(issue(`unsupported keyword statement: ${line}`, ["keyword-dsl-v0"], idx));
   }
 
   if (!module) issues.push(issue("missing module header", ["keyword-dsl-v0"]));
+
+  // post-validate: interface members must not have bodies; assign tracking is emit-time soft
+  function walk(nodes, inInterface = false) {
+    for (const n of nodes || []) {
+      if (n.op === "define" && n.kind === "interface") {
+        for (const m of n.members || []) {
+          if (m.kind === "method" && m.body !== null && m.body !== undefined) {
+            issues.push(
+              issue("interface methods must not have bodies", ["F7"], null),
+            );
+          }
+          if (m.kind === "constructor") {
+            issues.push(issue("constructor is invalid inside interface", ["F7"], null));
+          }
+        }
+        walk(n.members, true);
+      } else if (n.op === "define" && (n.kind === "class" || n.kind === "interface")) {
+        walk(n.members, n.kind === "interface");
+      } else if (n.op === "define" && Array.isArray(n.body)) {
+        walk(n.body, inInterface);
+      }
+    }
+  }
+  walk(body);
 
   if (issues.length) {
     return {
@@ -446,8 +903,7 @@ function reviewSource(text) {
       toDict: () => ({ legal: false, issues: issues.map((i) => i.toDict()) }),
     };
   }
-  const ir = { module, body };
-  return { legal: true, ir, issues: [], toDict: () => ({ legal: true, ir }) };
+  return { legal: true, ir: { module, body }, issues: [], toDict: () => ({ legal: true, ir: { module, body } }) };
 }
 
 function normalizeIr(node) {
@@ -572,7 +1028,7 @@ function checkCorpus(root) {
 }
 
 function printHelp() {
-  console.log(`Lira v0 keyword→DSL checker
+  console.log(`Lira keyword→DSL checker
 
 Usage:
   node tools/lira_keyword_dsl.mjs review <file.lira>
@@ -626,7 +1082,7 @@ function main(argv) {
   return 2;
 }
 
-export { reviewSource, normalizeIr };
+export { reviewSource, normalizeIr, parseExpression };
 
 const isMain =
   process.argv[1] &&

@@ -1,0 +1,109 @@
+{
+  "module": {
+    "id": "mod_f5_members",
+    "op": "module",
+    "name": "f5_members"
+  },
+  "body": [
+    {
+      "id": "decl_Account",
+      "op": "define",
+      "kind": "class",
+      "name": "Account",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_name",
+          "op": "define",
+          "kind": "property",
+          "name": "name",
+          "modifiers": {
+            "public": true
+          },
+          "init": {
+            "kind": "literal",
+            "type": "string",
+            "value": "anon"
+          }
+        },
+        {
+          "id": "decl_secret",
+          "op": "define",
+          "kind": "property",
+          "name": "secret",
+          "modifiers": {
+            "private": true
+          }
+        },
+        {
+          "id": "decl_version",
+          "op": "define",
+          "kind": "property",
+          "name": "version",
+          "modifiers": {
+            "public": true,
+            "static": true
+          },
+          "init": {
+            "kind": "literal",
+            "type": "number",
+            "value": 1
+          }
+        },
+        {
+          "id": "decl_ping",
+          "op": "define",
+          "kind": "method",
+          "name": "ping",
+          "modifiers": {
+            "public": true
+          },
+          "params": [],
+          "returns": "string",
+          "body": [
+            {
+              "id": "stmt_1",
+              "op": "return",
+              "value": {
+                "kind": "literal",
+                "type": "string",
+                "value": "ok"
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_normalize",
+          "op": "define",
+          "kind": "method",
+          "name": "normalize",
+          "modifiers": {
+            "private": true,
+            "static": true
+          },
+          "params": [
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ],
+          "returns": "string",
+          "body": [
+            {
+              "id": "stmt_2",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "value"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

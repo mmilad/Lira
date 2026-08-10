@@ -16,37 +16,40 @@ Related: [keyword-dsl-v0.md](keyword-dsl-v0.md), [decision-log.md](decision-log.
 
 ## Kind × modifier matrix
 
-| Modifier \ Kind | module | class | function | method | property | variable | constant |
-|---|---|---|---|---|---|---|---|
-| `export` | invalid | allowed* | allowed* | invalid | invalid | allowed* | allowed* |
-| `abstract` | invalid | allowed | invalid | allowed† | invalid | invalid | invalid |
-| `static` | invalid | invalid | invalid | allowed | allowed | deferred | deferred |
-| `async` | invalid | invalid | allowed | allowed | invalid | invalid | invalid |
-| `public` | invalid | invalid | invalid | allowed‡ | allowed‡ | invalid | invalid |
-| `protected` | invalid | invalid | invalid | allowed‡ | allowed‡ | invalid | invalid |
-| `private` | invalid | invalid | invalid | allowed‡ | allowed‡ | invalid | invalid |
-| `readonly` | invalid | invalid | invalid | invalid | allowed | allowed | invalid |
+| Modifier \ Kind | module | class | interface | function | method | constructor | property | variable | constant |
+|---|---|---|---|---|---|---|---|---|---|
+| `export` | invalid | allowed* | allowed* | allowed* | invalid | invalid | invalid | allowed* | allowed* |
+| `abstract` | invalid | allowed | invalid | invalid | allowed† | invalid | invalid | invalid | invalid |
+| `static` | invalid | invalid | invalid | invalid | allowed | invalid | allowed | deferred | deferred |
+| `async` | invalid | invalid | invalid | allowed | allowed | invalid | invalid | invalid | invalid |
+| `public` | invalid | invalid | invalid | invalid | allowed‡ | allowed‡ | allowed‡ | invalid | invalid |
+| `protected` | invalid | invalid | invalid | invalid | allowed‡ | allowed‡ | allowed‡ | invalid | invalid |
+| `private` | invalid | invalid | invalid | invalid | allowed‡ | allowed‡ | allowed‡ | invalid | invalid |
+| `readonly` | invalid | invalid | invalid | invalid | invalid | invalid | allowed | allowed | invalid |
 
 ### Notes
 
 - `*` `export` only at module / exportable scope (D006).
-- `†` `abstract` method only inside an `abstract` class in v0. No method body.
+- `†` `abstract` method only inside an `abstract` class, or bodyless methods inside `interface` (F7).
 - `‡` visibility only in member scope inside a type (D007).
 - `module` itself is not declared with `define module` modifiers in v0; see DSL spec.
 - `constant` is already immutable; `readonly constant` is invalid redundancy.
 - Top-level `method` is invalid; use `function` (D009).
+- `constructor` only inside `class` (F6).
 
 ## Scope validity rules
 
 | Keyword / role | Valid scopes | Invalid scopes |
 |---|---|---|
 | `export` | module | class / method / function body |
-| `public` / `protected` / `private` | class member | module top-level, nested blocks |
-| `define class` | module | inside class (nested class deferred) |
+| `public` / `protected` / `private` | class/interface member | module top-level, nested blocks |
+| `define class` / `define interface` | module | inside class (nested deferred) |
 | `define function` | module | inside class (use `method`) |
-| `define method` | class | module top-level |
+| `define method` | class or interface | module top-level |
+| `define constructor` | class | module, interface |
 | `define property` | class | module top-level |
-| `define variable` / `define constant` | module or member | n/a for v0 keyword surface |
+| `define variable` / `define constant` | module or callable body | n/a |
+| `return` / `assign` / `set` / `call` | callable body | module top-level |
 | `abstract` on class | module | member |
 | `static` | class member callable/property | module top-level function |
 

@@ -3,7 +3,12 @@ export class Note {
   public readonly id: unknown;
   public title: unknown;
   private body: unknown;
-  static createEmpty(): void {
+  constructor(id: string, title: string) {
+    this.id = id;
+    this.title = title;
+    this.body = "";
   }
-
+  public static createEmpty(): Note {
+    return new Note("0", "");
+  }
 }

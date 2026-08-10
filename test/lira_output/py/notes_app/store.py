@@ -1,15 +1,12 @@
 # module notes_store
-from abc import ABC, abstractmethod
+from typing import Protocol
 
-class NoteStore(ABC):
-    @abstractmethod
-    def get(self) -> None:
+class NoteStore(Protocol):
+    def get(self, id: str) -> Note:
         ...
 
-    @abstractmethod
-    def save(self) -> None:
+    def save(self, note: Note) -> Note:
         ...
 
-    @abstractmethod
-    def list(self) -> None:
+    def list(self) -> Note:
         ...

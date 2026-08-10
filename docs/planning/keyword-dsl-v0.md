@@ -423,13 +423,54 @@ When converting DSL → IR:
 
 ---
 
-## Intentionally inexpressible in v0
+## Executable surface (F1–F7)
+
+### Signatures + return
+
+```lira
+define export function greet(name: string) -> string
+  return name
+```
+
+### Bindings
+
+```lira
+define constant label = "hi"
+define variable count = 1
+assign count = 2
+```
+
+### Expressions
+
+Literals, refs, member chains (`note.title`). Also `construct Type(args)` and call-shaped expressions.
+
+### Call / construct
+
+```lira
+define variable user = construct User("Ada")
+call user.greet(other.name)
+```
+
+### Constructor + set
+
+```lira
+define constructor(name: string)
+  set this.name = name
+```
+
+### Interface
+
+```lira
+define export interface Greeter
+  define method greet(name: string) -> string
+```
+
+## Intentionally still out of scope
 
 - default import/export
-- `interface` / `contract`
 - nested classes
 - escaped identifiers
 - brace/`end` blocks as alternative to indentation
-- full expression / control-flow vocabulary
+- operators, `if` / loops / try
 
-Do not invent spellings for these during the skill trial.
+Do not invent spellings for out-of-scope forms; extend via revision protocol + feature tests.

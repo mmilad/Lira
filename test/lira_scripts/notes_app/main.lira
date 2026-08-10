@@ -3,6 +3,9 @@ module notes_main
 import NoteService from "./service"
 import Note as NoteModel from "./models"
 
-define export constant APP_NAME
+define export constant APP_NAME = "notes"
 
-define export function boot
+define export function boot(service: NoteService) -> NoteModel
+  define variable note = construct NoteModel("1", "hello")
+  call service.create(note.title)
+  return note

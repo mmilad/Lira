@@ -1,0 +1,74 @@
+{
+  "module": {
+    "id": "mod_f1_return",
+    "op": "module",
+    "name": "f1_return"
+  },
+  "body": [
+    {
+      "id": "decl_greet",
+      "op": "define",
+      "kind": "function",
+      "name": "greet",
+      "modifiers": {
+        "export": true
+      },
+      "params": [
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "returns": "string",
+      "body": [
+        {
+          "id": "stmt_1",
+          "op": "return",
+          "value": {
+            "kind": "ref",
+            "name": "name"
+          }
+        }
+      ]
+    },
+    {
+      "id": "decl_Greeter",
+      "op": "define",
+      "kind": "class",
+      "name": "Greeter",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_hello",
+          "op": "define",
+          "kind": "method",
+          "name": "hello",
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "returns": "string",
+          "body": [
+            {
+              "id": "stmt_2",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "name"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -110,12 +110,12 @@ Format:
 
 ## D012 — Interface / contract naming
 
-- **Status**: deferred
+- **Status**: superseded
 - **Scope**: post-v0
 - **Date**: 2026-08-10
 - **Decision**: Not part of keyword→DSL v0 surface.
-- **Rationale**: Focus declarations on `class`, callables, properties, bindings first.
-- **Follow-up**: Reopen when portable type contracts are needed.
+- **Rationale**: Superseded by D019 (`interface` promoted).
+- **Follow-up**: See D019.
 
 ## D013 — Default import/export
 
@@ -137,12 +137,75 @@ Format:
 
 ## D015 — Expression and control-flow completeness
 
-- **Status**: deferred
+- **Status**: superseded
 - **Scope**: post-v0
 - **Date**: 2026-08-10
 - **Decision**: Full expression/operator/control-flow DSL is outside this experiment.
-- **Rationale**: v0 force is keywords→DSL for declarations and imports.
-- **Follow-up**: Roadmap phases 3–6.
+- **Rationale**: Partial supersession by D019–D025 (mini expression + call/return). Full control-flow still deferred.
+- **Follow-up**: `if`/loops/try remain out of scope.
+
+## D019 — F1 Callable signatures + return
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: Functions/methods support `(name: type)` params, optional `-> type`, and body `return` / `return <expr>`.
+- **Rationale**: First executable slice for the test pipeline.
+- **Follow-up**: Tests under `test/lira_scripts/features/f1_return/`.
+
+## D020 — F2 variable / constant + assign
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: Keep `variable` / `constant` keywords. Init with `= <expr>`. `assign name = <expr>` rebinds variables (semantic intent; Python does not enforce const).
+- **Rationale**: Avoid “let-like” wording; emit TS `let`/`const`.
+- **Follow-up**: Soft enforcement of assign-to-constant can tighten later.
+
+## D021 — F3 mini expressions
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: Expressions are literals, name refs, and member chains (`a.b.c`). No operators yet.
+- **Rationale**: Enough for returns, inits, and call args.
+- **Follow-up**: Operators later.
+
+## D022 — F4 call / construct
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: Explicit `call callee(args)` statements and `construct Type(args)` expressions. Callee may be `obj.method`.
+- **Rationale**: No bare `foo()` sugar; keeps IR unambiguous.
+- **Follow-up**: Feature tests in `f4_call_construct`.
+
+## D023 — F5 member completeness
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: Public/private/static combinations on methods/properties; property defaults via `= <expr>`.
+- **Rationale**: Hardens class member surface already started in keyword v0.
+- **Follow-up**: Matrix cells remain authoritative.
+
+## D024 — F6 constructor
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: `define constructor(params)` only inside class; body may `set this.x = ...` and `return`. Emit TS `constructor` / Python `__init__`.
+- **Rationale**: Explicit construction, not inferred `new`.
+- **Follow-up**: Feature tests in `f6_constructor`.
+
+## D025 — F7 interface
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: `define interface` with method members (no bodies). Classes may `implements`. Emit TS `interface` / Python `Protocol`.
+- **Rationale**: Needed for portable ports (e.g. NoteStore). Supersedes D012.
+- **Follow-up**: Feature tests in `f7_interface`; notes_app uses interface store.
 
 ## D016 — `module` is the portable unit
 

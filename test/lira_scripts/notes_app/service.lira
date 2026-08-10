@@ -5,6 +5,13 @@ import NoteStore from "./store"
 
 define export class NoteService
   define private property store
-  define method create
-  define async method load
-  define method list
+  define constructor(store: NoteStore)
+    set this.store = store
+  define public method create(title: string) -> Note
+    define variable note = construct Note("1", title)
+    call this.store.save(note)
+    return note
+  define public async method load(id: string) -> Note
+    return this.store.get(id)
+  define public method list() -> Note
+    return this.store.list()

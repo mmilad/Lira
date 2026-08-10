@@ -36,6 +36,11 @@
       "name": "APP_NAME",
       "modifiers": {
         "export": true
+      },
+      "init": {
+        "kind": "literal",
+        "type": "string",
+        "value": "notes"
       }
     },
     {
@@ -46,8 +51,66 @@
       "modifiers": {
         "export": true
       },
-      "params": [],
-      "body": []
+      "params": [
+        {
+          "name": "service",
+          "type": "NoteService"
+        }
+      ],
+      "returns": "NoteModel",
+      "body": [
+        {
+          "id": "decl_note",
+          "op": "define",
+          "kind": "variable",
+          "name": "note",
+          "modifiers": {},
+          "init": {
+            "kind": "construct",
+            "type": "NoteModel",
+            "args": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "1"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "hello"
+              }
+            ]
+          }
+        },
+        {
+          "id": "stmt_1",
+          "op": "call",
+          "callee": {
+            "kind": "member",
+            "parts": [
+              "service",
+              "create"
+            ]
+          },
+          "args": [
+            {
+              "kind": "member",
+              "parts": [
+                "note",
+                "title"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "stmt_2",
+          "op": "return",
+          "value": {
+            "kind": "ref",
+            "name": "note"
+          }
+        }
+      ]
     }
   ]
 }

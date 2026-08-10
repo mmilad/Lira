@@ -1,6 +1,6 @@
 module notes_store
 
-define export abstract class NoteStore
-  define abstract method get
-  define abstract method save
-  define abstract method list
+define export interface NoteStore
+  define method get(id: string) -> Note
+  define method save(note: Note) -> Note
+  define method list() -> Note

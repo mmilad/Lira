@@ -1,0 +1,9 @@
+module f6_constructor
+
+define export class User
+  define public property name
+  define constructor(name: string)
+    set this.name = name
+    return
+  define public method greet() -> string
+    return this.name

@@ -1,0 +1,8 @@
+module f4_call_construct
+
+import User from "./user"
+
+define export function boot(other: User) -> User
+  define variable user = construct User("Ada")
+  call user.greet(other.name)
+  return user

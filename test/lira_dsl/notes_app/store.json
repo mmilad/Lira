@@ -8,10 +8,9 @@
     {
       "id": "decl_NoteStore",
       "op": "define",
-      "kind": "class",
+      "kind": "interface",
       "name": "NoteStore",
       "modifiers": {
-        "abstract": true,
         "export": true
       },
       "extends": null,
@@ -22,10 +21,14 @@
           "op": "define",
           "kind": "method",
           "name": "get",
-          "modifiers": {
-            "abstract": true
-          },
-          "params": [],
+          "modifiers": {},
+          "params": [
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "returns": "Note",
           "body": null
         },
         {
@@ -33,10 +36,14 @@
           "op": "define",
           "kind": "method",
           "name": "save",
-          "modifiers": {
-            "abstract": true
-          },
-          "params": [],
+          "modifiers": {},
+          "params": [
+            {
+              "name": "note",
+              "type": "Note"
+            }
+          ],
+          "returns": "Note",
           "body": null
         },
         {
@@ -44,10 +51,9 @@
           "op": "define",
           "kind": "method",
           "name": "list",
-          "modifiers": {
-            "abstract": true
-          },
+          "modifiers": {},
           "params": [],
+          "returns": "Note",
           "body": null
         }
       ]

@@ -16,7 +16,7 @@ Accepted answers live in [decision-log.md](decision-log.md), [keyword-matrix-v0.
 | B1 alias binding | **D008** binds to previous item |
 | B2 namespace import | `import all ... as` allowed; default deferred (**D013**) |
 | B4 default export | deferred (**D013**) |
-| C1 interface vs contract | deferred (**D012**) |
+| C1 interface vs contract | **D025** use `interface` |
 | D1 function vs method | scope + explicit kinds (**D009**) |
 | G unsupported semantics | backends deferred; matrix rejects invalid/deferred now (**D010**, **D011**) |
 | H source vs IR | IR is the contract (**D001**) |

@@ -4,4 +4,9 @@ define export class Note
   define public readonly property id
   define public property title
   define private property body
-  define static method createEmpty
+  define constructor(id: string, title: string)
+    set this.id = id
+    set this.title = title
+    set this.body = ""
+  define public static method createEmpty() -> Note
+    return construct Note("0", "")

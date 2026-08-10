@@ -6,11 +6,19 @@ from "./store" import NoteStore
 class NoteService:
     store: object
 
-    def create(self) -> None:
-        pass
+    def __init__(self, store: NoteStore) -> None:
+        self.store = store
 
-    async def load(self) -> None:
-        pass
 
-    def list(self) -> None:
-        pass
+    def create(self, title: str) -> Note:
+        note = Note("1", title)
+        self.store.save(note)
+        return note
+
+
+    async def load(self, id: str) -> Note:
+        return self.store.get(id)
+
+
+    def list(self) -> Note:
+        return self.store.list()

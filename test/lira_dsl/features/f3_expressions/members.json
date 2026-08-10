@@ -1,0 +1,38 @@
+{
+  "module": {
+    "id": "mod_f3_expressions",
+    "op": "module",
+    "name": "f3_expressions"
+  },
+  "body": [
+    {
+      "id": "decl_readTitle",
+      "op": "define",
+      "kind": "function",
+      "name": "readTitle",
+      "modifiers": {
+        "export": true
+      },
+      "params": [
+        {
+          "name": "note",
+          "type": "Note"
+        }
+      ],
+      "returns": "string",
+      "body": [
+        {
+          "id": "stmt_1",
+          "op": "return",
+          "value": {
+            "kind": "member",
+            "parts": [
+              "note",
+              "title"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

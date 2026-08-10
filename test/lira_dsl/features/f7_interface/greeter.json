@@ -1,0 +1,120 @@
+{
+  "module": {
+    "id": "mod_f7_interface",
+    "op": "module",
+    "name": "f7_interface"
+  },
+  "body": [
+    {
+      "id": "decl_Greeter",
+      "op": "define",
+      "kind": "interface",
+      "name": "Greeter",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_greet",
+          "op": "define",
+          "kind": "method",
+          "name": "greet",
+          "modifiers": {},
+          "params": [
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "returns": "string",
+          "body": null
+        }
+      ]
+    },
+    {
+      "id": "decl_Person",
+      "op": "define",
+      "kind": "class",
+      "name": "Person",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [
+        "Greeter"
+      ],
+      "members": [
+        {
+          "id": "decl_name",
+          "op": "define",
+          "kind": "property",
+          "name": "name",
+          "modifiers": {
+            "public": true
+          }
+        },
+        {
+          "id": "decl_Person_constructor",
+          "op": "define",
+          "kind": "constructor",
+          "name": "constructor",
+          "modifiers": {},
+          "params": [
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "body": [
+            {
+              "id": "stmt_1",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "name"
+                ]
+              },
+              "value": {
+                "kind": "ref",
+                "name": "name"
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_greet",
+          "op": "define",
+          "kind": "method",
+          "name": "greet",
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "returns": "string",
+          "body": [
+            {
+              "id": "stmt_2",
+              "op": "return",
+              "value": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "name"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

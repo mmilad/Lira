@@ -1,0 +1,11 @@
+module f7_interface
+
+define export interface Greeter
+  define method greet(name: string) -> string
+
+define export class Person implements Greeter
+  define public property name
+  define constructor(name: string)
+    set this.name = name
+  define public method greet(name: string) -> string
+    return this.name

@@ -1,0 +1,10 @@
+module f5_members
+
+define export class Account
+  define public property name = "anon"
+  define private property secret
+  define public static property version = 1
+  define public method ping() -> string
+    return "ok"
+  define private static method normalize(value: string) -> string
+    return value

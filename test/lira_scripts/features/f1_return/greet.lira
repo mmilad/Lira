@@ -1,0 +1,8 @@
+module f1_return
+
+define export function greet(name: string) -> string
+  return name
+
+define export class Greeter
+  define public method hello(name: string) -> string
+    return name

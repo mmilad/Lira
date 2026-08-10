@@ -45,15 +45,103 @@
           }
         },
         {
+          "id": "decl_Note_constructor",
+          "op": "define",
+          "kind": "constructor",
+          "name": "constructor",
+          "modifiers": {},
+          "params": [
+            {
+              "name": "id",
+              "type": "string"
+            },
+            {
+              "name": "title",
+              "type": "string"
+            }
+          ],
+          "body": [
+            {
+              "id": "stmt_1",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "id"
+                ]
+              },
+              "value": {
+                "kind": "ref",
+                "name": "id"
+              }
+            },
+            {
+              "id": "stmt_2",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "title"
+                ]
+              },
+              "value": {
+                "kind": "ref",
+                "name": "title"
+              }
+            },
+            {
+              "id": "stmt_3",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "body"
+                ]
+              },
+              "value": {
+                "kind": "literal",
+                "type": "string",
+                "value": ""
+              }
+            }
+          ]
+        },
+        {
           "id": "decl_createEmpty",
           "op": "define",
           "kind": "method",
           "name": "createEmpty",
           "modifiers": {
+            "public": true,
             "static": true
           },
           "params": [],
-          "body": []
+          "returns": "Note",
+          "body": [
+            {
+              "id": "stmt_4",
+              "op": "return",
+              "value": {
+                "kind": "construct",
+                "type": "Note",
+                "args": [
+                  {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "0"
+                  },
+                  {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": ""
+                  }
+                ]
+              }
+            }
+          ]
         }
       ]
     }

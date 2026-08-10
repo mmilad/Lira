@@ -1,0 +1,85 @@
+{
+  "module": {
+    "id": "mod_f4_call_construct",
+    "op": "module",
+    "name": "f4_call_construct"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./user",
+      "style": "named",
+      "items": [
+        {
+          "name": "User",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "decl_boot",
+      "op": "define",
+      "kind": "function",
+      "name": "boot",
+      "modifiers": {
+        "export": true
+      },
+      "params": [
+        {
+          "name": "other",
+          "type": "User"
+        }
+      ],
+      "returns": "User",
+      "body": [
+        {
+          "id": "decl_user",
+          "op": "define",
+          "kind": "variable",
+          "name": "user",
+          "modifiers": {},
+          "init": {
+            "kind": "construct",
+            "type": "User",
+            "args": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "Ada"
+              }
+            ]
+          }
+        },
+        {
+          "id": "stmt_1",
+          "op": "call",
+          "callee": {
+            "kind": "member",
+            "parts": [
+              "user",
+              "greet"
+            ]
+          },
+          "args": [
+            {
+              "kind": "member",
+              "parts": [
+                "other",
+                "name"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "stmt_2",
+          "op": "return",
+          "value": {
+            "kind": "ref",
+            "name": "user"
+          }
+        }
+      ]
+    }
+  ]
+}
