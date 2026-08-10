@@ -1,0 +1,6 @@
+# Illustrative syntax only — not yet a stable grammar.
+
+module hello
+
+function greet(name: string) -> string
+  return "Hello, " + name
