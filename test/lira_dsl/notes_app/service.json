@@ -207,9 +207,16 @@
           "returns": "Note",
           "body": [
             {
-              "id": "stmt_6",
-              "op": "return",
-              "value": {
+              "id": "decl_note",
+              "op": "define",
+              "kind": "variable",
+              "name": "note",
+              "modifiers": {},
+              "type": {
+                "kind": "nullable",
+                "inner": "Note"
+              },
+              "init": {
                 "kind": "call",
                 "callee": {
                   "kind": "member",
@@ -225,6 +232,43 @@
                     "name": "id"
                   }
                 ]
+              }
+            },
+            {
+              "id": "stmt_6",
+              "op": "if",
+              "condition": {
+                "kind": "binary",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "name": "note"
+                },
+                "right": {
+                  "kind": "literal",
+                  "type": "null",
+                  "value": null
+                }
+              },
+              "then": [
+                {
+                  "id": "stmt_7",
+                  "op": "throw",
+                  "value": {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "missing note"
+                  }
+                }
+              ],
+              "else": null
+            },
+            {
+              "id": "stmt_8",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "note"
               }
             }
           ]
@@ -244,7 +288,7 @@
           },
           "body": [
             {
-              "id": "stmt_7",
+              "id": "stmt_9",
               "op": "return",
               "value": {
                 "kind": "call",
@@ -309,7 +353,7 @@
               }
             },
             {
-              "id": "stmt_8",
+              "id": "stmt_10",
               "op": "for",
               "name": "note",
               "iterable": {
@@ -318,7 +362,7 @@
               },
               "body": [
                 {
-                  "id": "stmt_9",
+                  "id": "stmt_11",
                   "op": "if",
                   "condition": {
                     "kind": "binary",
@@ -335,7 +379,7 @@
                   },
                   "then": [
                     {
-                      "id": "stmt_10",
+                      "id": "stmt_12",
                       "op": "assign",
                       "name": "result",
                       "value": {
@@ -352,7 +396,7 @@
               ]
             },
             {
-              "id": "stmt_11",
+              "id": "stmt_13",
               "op": "return",
               "value": {
                 "kind": "ref",

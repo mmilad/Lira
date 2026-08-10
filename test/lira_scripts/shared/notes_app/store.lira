@@ -1,6 +1,6 @@
 module notes_store
 
 define export interface NoteStore
-  define method get(id: string) -> Note
+  define method get(id: string) -> Note?
   define method save(note: Note) -> Note
   define method list() -> list[Note]

@@ -28,7 +28,10 @@
               "type": "string"
             }
           ],
-          "returns": "Note",
+          "returns": {
+            "kind": "nullable",
+            "inner": "Note"
+          },
           "body": null
         },
         {

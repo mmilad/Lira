@@ -1,0 +1,6 @@
+module f15_throw
+
+define export function requireId(id: string) -> string
+  if id == ""
+    throw "missing id"
+  return id

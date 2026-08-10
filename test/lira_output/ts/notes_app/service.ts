@@ -18,7 +18,11 @@ export class NoteService {
     return note;
   }
   public async load(id: string): Note {
-    return this.store.get(id);
+    let note: Note | null = this.store.get(id);
+    if ((note == null)) {
+      throw new Error("missing note");
+    }
+    return note;
   }
   public list(): Note[] {
     return this.store.list();

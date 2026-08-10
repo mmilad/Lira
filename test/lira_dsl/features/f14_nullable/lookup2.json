@@ -1,0 +1,47 @@
+{
+  "module": {
+    "id": "mod_f14_nullable2",
+    "op": "module",
+    "name": "f14_nullable2"
+  },
+  "body": [
+    {
+      "id": "decl_lookup",
+      "op": "define",
+      "kind": "function",
+      "name": "lookup",
+      "modifiers": {
+        "export": true
+      },
+      "params": [
+        {
+          "name": "id",
+          "type": "string"
+        }
+      ],
+      "returns": {
+        "kind": "nullable",
+        "inner": "string"
+      },
+      "body": [
+        {
+          "id": "stmt_1",
+          "op": "return",
+          "value": {
+            "kind": "binary",
+            "op": "or",
+            "left": {
+              "kind": "ref",
+              "name": "id"
+            },
+            "right": {
+              "kind": "literal",
+              "type": "null",
+              "value": null
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

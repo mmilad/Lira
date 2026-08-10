@@ -15,7 +15,10 @@ define export class NoteService
     call this.store.save(note)
     return note
   define public async method load(id: string) -> Note
-    return this.store.get(id)
+    define variable note: Note? = this.store.get(id)
+    if note == null
+      throw "missing note"
+    return note
   define public method list() -> list[Note]
     return this.store.list()
   define public method firstTitle() -> string

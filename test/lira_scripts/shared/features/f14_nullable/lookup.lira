@@ -1,0 +1,8 @@
+module f14_nullable
+
+define export function lookup(id: string) -> string?
+  define variable found: string? = null
+  if id == ""
+    return found
+  assign found = id
+  return found

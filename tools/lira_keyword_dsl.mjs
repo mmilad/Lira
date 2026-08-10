@@ -509,6 +509,9 @@ function splitTopLevel(text, sep) {
 function parseType(text) {
   const s = text.trim();
   if (!s) throw new Error("empty type");
+  if (s.endsWith("?") && s.length > 1) {
+    return { kind: "nullable", inner: parseType(s.slice(0, -1).trim()) };
+  }
   if (s.startsWith("list[") && s.endsWith("]")) {
     return { kind: "list", element: parseType(s.slice(5, -1)) };
   }
@@ -828,10 +831,18 @@ function attachNode(stack, body, node, indent, issues, lineNo) {
 function attachStatement(stack, body, stmt, indent, issues, lineNo) {
   const bodyOwner = findBodyOwner(stack);
   if (!bodyOwner || indent <= bodyOwner.indent || !Array.isArray(bodyOwner.bodyRef)) {
+    const rule =
+      stmt.op === "if"
+        ? "F10"
+        : stmt.op === "for"
+          ? "F13"
+          : stmt.op === "throw"
+            ? "F15"
+            : "F1";
     issues.push(
       issue(
         `${stmt.op} is only valid inside a function, method, constructor, or if body`,
-        [stmt.op === "if" ? "F10" : stmt.op === "for" ? "F13" : "F1"],
+        [rule],
         lineNo,
       ),
     );
@@ -1058,6 +1069,31 @@ function reviewSource(text) {
         issues,
         idx,
       );
+      continue;
+    }
+
+    if (line.startsWith("throw")) {
+      if (!line.startsWith("throw ")) {
+        issues.push(issue(`invalid throw statement: ${line}`, ["F15"], idx));
+        continue;
+      }
+      try {
+        const value = parseExpression(line.slice("throw ".length));
+        if (value.kind !== "literal" || value.type !== "string") {
+          throw new Error("throw requires a string message in v1");
+        }
+        counters.stmt += 1;
+        attachStatement(
+          stack,
+          body,
+          { id: `stmt_${counters.stmt}`, op: "throw", value },
+          indent,
+          issues,
+          idx,
+        );
+      } catch (err) {
+        issues.push(issue(err.message, ["F15"], idx));
+      }
       continue;
     }
 

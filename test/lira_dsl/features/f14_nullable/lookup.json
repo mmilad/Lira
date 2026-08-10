@@ -1,0 +1,91 @@
+{
+  "module": {
+    "id": "mod_f14_nullable",
+    "op": "module",
+    "name": "f14_nullable"
+  },
+  "body": [
+    {
+      "id": "decl_lookup",
+      "op": "define",
+      "kind": "function",
+      "name": "lookup",
+      "modifiers": {
+        "export": true
+      },
+      "params": [
+        {
+          "name": "id",
+          "type": "string"
+        }
+      ],
+      "returns": {
+        "kind": "nullable",
+        "inner": "string"
+      },
+      "body": [
+        {
+          "id": "decl_found",
+          "op": "define",
+          "kind": "variable",
+          "name": "found",
+          "modifiers": {},
+          "type": {
+            "kind": "nullable",
+            "inner": "string"
+          },
+          "init": {
+            "kind": "literal",
+            "type": "null",
+            "value": null
+          }
+        },
+        {
+          "id": "stmt_1",
+          "op": "if",
+          "condition": {
+            "kind": "binary",
+            "op": "==",
+            "left": {
+              "kind": "ref",
+              "name": "id"
+            },
+            "right": {
+              "kind": "literal",
+              "type": "string",
+              "value": ""
+            }
+          },
+          "then": [
+            {
+              "id": "stmt_2",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "found"
+              }
+            }
+          ],
+          "else": null
+        },
+        {
+          "id": "stmt_3",
+          "op": "assign",
+          "name": "found",
+          "value": {
+            "kind": "ref",
+            "name": "id"
+          }
+        },
+        {
+          "id": "stmt_4",
+          "op": "return",
+          "value": {
+            "kind": "ref",
+            "name": "found"
+          }
+        }
+      ]
+    }
+  ]
+}

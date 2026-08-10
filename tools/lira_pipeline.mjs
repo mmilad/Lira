@@ -2,9 +2,13 @@
 /**
  * Idempotent Lira test pipeline.
  *
- *   test/lira_scripts/.../*.lira
+ *   test/lira_scripts/<scope>/<rel>.lira
+ *     scope: shared | ts | py | …
  *     -> test/lira_dsl/<rel>.json
  *     -> test/lira_output/<target>/<rel><ext>
+ *
+ *   shared → every target; ts/py → that target only.
+ *   Goldens strip the scope segment (flat paths).
  *
  * Usage:
  *   node tools/lira_pipeline.mjs generate   # write committed goldens
@@ -23,6 +27,8 @@ const SCRIPTS = path.join(repo, "test", "lira_scripts");
 const DSL = path.join(repo, "test", "lira_dsl");
 const OUTPUT = path.join(repo, "test", "lira_output");
 
+const SCOPES = new Set(["shared", ...TARGETS.map((t) => t.namespace)]);
+
 function walkLiraFiles(root) {
   /** @type {string[]} */
   const out = [];
@@ -38,9 +44,52 @@ function walkLiraFiles(root) {
   return out.sort();
 }
 
-function relName(file) {
-  const rel = path.relative(SCRIPTS, file);
-  return rel.replace(/\\/g, "/").replace(/\.lira$/i, "");
+function scriptPath(file) {
+  const rel = path.relative(SCRIPTS, file).replace(/\\/g, "/");
+  return rel.replace(/\.lira$/i, "");
+}
+
+function resolveScript(file) {
+  const full = scriptPath(file);
+  const slash = full.indexOf("/");
+  if (slash <= 0) {
+    throw new Error(
+      `${full}: scripts must live under a scope folder (shared|${TARGETS.map((t) => t.namespace).join("|")})`,
+    );
+  }
+  const scope = full.slice(0, slash);
+  const name = full.slice(slash + 1);
+  if (!SCOPES.has(scope)) {
+    throw new Error(
+      `${full}: unknown scope ${JSON.stringify(scope)} (expected shared|${[...SCOPES].filter((s) => s !== "shared").join("|")})`,
+    );
+  }
+  if (!name) {
+    throw new Error(`${full}: empty path after scope`);
+  }
+  return { scope, name, label: full };
+}
+
+function emitTargetsForScope(scope) {
+  if (scope === "shared") return TARGETS;
+  const hit = TARGETS.filter((t) => t.namespace === scope);
+  if (!hit.length) {
+    throw new Error(`no emitter for scope ${JSON.stringify(scope)}`);
+  }
+  return hit;
+}
+
+function assertUniqueRels(files) {
+  /** @type {Map<string, string>} */
+  const seen = new Map();
+  for (const file of files) {
+    const { name, label } = resolveScript(file);
+    const prev = seen.get(name);
+    if (prev) {
+      throw new Error(`path collision for ${JSON.stringify(name)}: ${prev} vs ${label}`);
+    }
+    seen.set(name, label);
+  }
 }
 
 function stableJson(value) {
@@ -52,30 +101,37 @@ function ensureDir(filePath) {
 }
 
 function buildArtifacts(file) {
-  const name = relName(file);
+  const { scope, name, label } = resolveScript(file);
   const source = fs.readFileSync(file, "utf8");
   const result = reviewSource(source);
   if (!result.legal) {
     const details = result.issues
       .map((i) => `  line ${i.line}: ${i.message}`)
       .join("\n");
-    throw new Error(`${name}: illegal Lira\n${details}`);
+    throw new Error(`${label}: illegal Lira\n${details}`);
   }
   const ir = normalizeIr(result.ir);
   const dslJson = stableJson(ir);
+  const targets = emitTargetsForScope(scope);
   /** @type {{ target: string, relPath: string, content: string }[]} */
-  const outputs = TARGETS.map((t) => ({
+  const outputs = targets.map((t) => ({
     target: t.namespace,
     relPath: `${name}${t.extension}`,
     content: t.emit(ir),
   }));
-  return { name, dslJson, outputs };
+  return { name, label, dslJson, outputs };
 }
 
 function generate() {
   const files = walkLiraFiles(SCRIPTS);
   if (!files.length) {
     console.error(`no .lira files under ${SCRIPTS}`);
+    return 1;
+  }
+  try {
+    assertUniqueRels(files);
+  } catch (err) {
+    console.error(err.message);
     return 1;
   }
   for (const file of files) {
@@ -101,13 +157,19 @@ function test() {
     console.error(`no .lira files under ${SCRIPTS}`);
     return 1;
   }
+  try {
+    assertUniqueRels(files);
+  } catch (err) {
+    console.log(`FAIL collision: ${err.message}`);
+    return 1;
+  }
   let failures = 0;
   for (const file of files) {
     let artifacts;
     try {
       artifacts = buildArtifacts(file);
     } catch (err) {
-      console.log(`FAIL ${relName(file)}: ${err.message}`);
+      console.log(`FAIL ${scriptPath(file)}: ${err.message}`);
       failures += 1;
       continue;
     }

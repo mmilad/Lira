@@ -14,7 +14,7 @@ description: >-
 1. [docs/planning/keyword-matrix-v0.md](../../../docs/planning/keyword-matrix-v0.md)
 2. [docs/planning/keyword-dsl-v0.md](../../../docs/planning/keyword-dsl-v0.md)
 3. [docs/planning/decision-log.md](../../../docs/planning/decision-log.md)
-4. Feature scripts under [test/lira_scripts/features/](../../../test/lira_scripts/features/)
+4. Feature scripts under [test/lira_scripts/shared/features/](../../../test/lira_scripts/shared/features/)
 
 ## Hard rules
 
@@ -33,19 +33,23 @@ description: >-
 
 ## Allowed operations
 
-`module`, `define`, `import`, `export`, `return`, `assign`, `set`, `call`, `if`, `else`, `for`
+`module`, `define`, `import`, `export`, `return`, `assign`, `set`, `call`, `if`, `else`, `for`, `throw`
 
 Boolean ops in expressions: `and`, `or`, `not` (not `&&` / `||` / `!`).
 
 Collections: `list[T]`, `map[K, V]`, `list(...)`, `map()`, index `a[i]`.
 
+Nullable: `T?`. `throw` takes a string message (v1).
+
 ## Authoring for the test pipeline
 
-Prefer:
+Prefer portable scripts:
 
 ```text
-test/lira_scripts/features/<slice>/<name>.lira
+test/lira_scripts/shared/features/<slice>/<name>.lira
 ```
+
+Language-local demos: `test/lira_scripts/ts/…` or `…/py/…` (D031). Authors supply keywords that fit the scope; the pipeline only selects emit targets.
 
 Then:
 

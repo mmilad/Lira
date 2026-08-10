@@ -20,7 +20,10 @@ class NoteService:
 
 
     async def load(self, id: str) -> Note:
-        return self.store.get(id)
+        note = self.store.get(id)
+        if (note == None):
+            raise Exception("missing note")
+        return note
 
 
     def list(self) -> list[Note]:

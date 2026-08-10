@@ -423,7 +423,7 @@ When converting DSL → IR:
 
 ---
 
-## Executable surface (F1–F13)
+## Executable surface (F1–F15)
 
 ### Signatures + return
 
@@ -512,6 +512,20 @@ for item in items
 
 Only inside callable / nested block bodies. IR: `{ op: "for", name, iterable, body }`.
 
+### Nullable + throw (F14–F15)
+
+```lira
+define method get(id: string) -> Note?
+define variable found: Note? = null
+if found == null
+  throw "missing note"
+return found
+```
+
+- Trailing `?` → `{ kind: "nullable", inner }`. Allows `Note?`, `list[Note]?`, `list[Note?]`.
+- `throw` takes a string message in v1. IR: `{ op: "throw", value }`. Same body scope as `return` / `if` / `for`.
+- Not general unions; not `try` / `catch`.
+
 ## Intentionally still out of scope
 
 - default import/export
@@ -519,6 +533,7 @@ Only inside callable / nested block bodies. IR: `{ op: "for", name, iterable, bo
 - escaped identifiers
 - brace/`end` blocks as alternative to indentation
 - `while` / `break` / `continue` / `match` / `else if` sugar
+- `try` / `catch` / `finally`
 - map entry literals / comprehensions
 - tuples / sets
 - bitwise ops, `===`

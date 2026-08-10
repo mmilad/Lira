@@ -3,13 +3,26 @@
 Committed goldens — regenerate, then retest. Idempotent by design.
 
 ```text
-test/lira_scripts/**/*.lira
+test/lira_scripts/<scope>/<rel>.lira
         ↓ parse
-test/lira_dsl/<name>.json
+test/lira_dsl/<rel>.json
         ↓ emit
-test/lira_output/ts/<name>.ts
-test/lira_output/py/<name>.py
+test/lira_output/<target>/<rel>.<ext>
 ```
+
+## Script scopes
+
+First path segment under `lira_scripts/` is the **scope**:
+
+| Scope | Emits to |
+|---|---|
+| `shared` | every language (`ts`, `py`, …) |
+| `ts` | TypeScript only |
+| `py` | Python only |
+
+Goldens **strip the scope segment** (flat paths). Post-scope `<rel>` must be unique across scopes.
+
+When writing scripts, use keywords that fit the scope (`shared` = portable surface). The pipeline does not reject “wrong-scope” keywords.
 
 ```bash
 npm run generate   # write/update committed dsl + output
@@ -18,4 +31,4 @@ npm test           # re-parse/re-emit and diff against committed files
 
 Only **legal** `.lira` scripts belong here. Illegal keyword cases stay under `examples/v0/illegal/`.
 
-Feature slices live under `test/lira_scripts/features/f1_return` … `f7_interface`. The `notes_app/` folder is the end-to-end structural+executable sketch.
+Portable feature slices live under `test/lira_scripts/shared/features/`. Language-local demos go under `test/lira_scripts/ts/` or `…/py/`. The `shared/notes_app/` folder is the end-to-end structural+executable sketch.

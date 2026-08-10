@@ -151,7 +151,7 @@ Format:
 - **Date**: 2026-08-10
 - **Decision**: Functions/methods support `(name: type)` params, optional `-> type`, and body `return` / `return <expr>`.
 - **Rationale**: First executable slice for the test pipeline.
-- **Follow-up**: Tests under `test/lira_scripts/features/f1_return/`.
+- **Follow-up**: Tests under `test/lira_scripts/shared/features/f1_return/`.
 
 ## D020 — F2 variable / constant + assign
 
@@ -223,7 +223,7 @@ Format:
 - **Date**: 2026-08-10
 - **Decision**: Portable ops: `* /`, `+ -`, comparisons, `and`/`or`/`not`, unary `-`. No `===`, no `&&`/`||` spellings in Lira.
 - **Rationale**: Language-neutral keywords; TS emitter maps boolean ops to symbols.
-- **Follow-up**: `test/lira_scripts/features/f9_operators/`.
+- **Follow-up**: `test/lira_scripts/shared/features/f9_operators/`.
 
 ## D028 — F10 if / else
 
@@ -232,7 +232,7 @@ Format:
 - **Date**: 2026-08-10
 - **Decision**: `if <expr>` / optional `else` with indentation bodies. No `else if` sugar; nest instead. Only inside callable (or nested if) bodies.
 - **Rationale**: Minimal control flow for real app logic in the pipeline.
-- **Follow-up**: `test/lira_scripts/features/f10_if/`; assign-to-constant rejected in parser.
+- **Follow-up**: `test/lira_scripts/shared/features/f10_if/`; assign-to-constant rejected in parser.
 
 ## D029 — F12 collections (list / map / index)
 
@@ -241,7 +241,7 @@ Format:
 - **Date**: 2026-08-10
 - **Decision**: Portable containers use `list[T]` / `map[K, V]` types; literals `list(...)` and empty `map()`; index get/set via `a[i]`. Emit TS `T[]` / `Record<K,V>` and Python `list[T]` / `dict[K,V]`. No map-entry sugar or nested maps in v1. Expression keywords `list`/`map` remain valid as member names after `.`.
 - **Rationale**: Notes-style apps need real collections without adopting target-specific spellings in source.
-- **Follow-up**: `test/lira_scripts/features/f12_collections/`; mapping rows in [target-mapping.md](target-mapping.md).
+- **Follow-up**: `test/lira_scripts/shared/features/f12_collections/`; mapping rows in [target-mapping.md](target-mapping.md).
 
 ## D030 — F13 for-in
 
@@ -250,7 +250,7 @@ Format:
 - **Date**: 2026-08-10
 - **Decision**: `for name in <expr>` with indentation body; IR `{ op: "for", name, iterable, body }`. Emit TS `for (const name of …)` / Python `for name in …`. Illegal at module top level. No `while` / `break` / `continue` in this slice.
 - **Rationale**: Iteration is the missing piece after collections for portable service logic.
-- **Follow-up**: `test/lira_scripts/features/f13_for/`; illegal case `examples/v0/illegal/for-outside-callable/`.
+- **Follow-up**: `test/lira_scripts/shared/features/f13_for/`; illegal case `examples/v0/illegal/for-outside-callable/`.
 
 ## D016 — `module` is the portable unit
 
@@ -277,4 +277,31 @@ Format:
 - **Date**: 2026-08-10
 - **Decision**: Use `test/lira_scripts/**/*.lira` → `test/lira_dsl/<name>.json` → `test/lira_output/<target>/**/<name>.<ext>` with committed goldens. `npm run generate` writes; `npm test` re-runs and diffs. No SLM loop required; logic must stay idempotent. Initial emit targets: `ts` and `py` (PHP later if needed).
 - **Rationale**: Retestability matters more than a formal backend package right now. Multi-target emit still pressures portable IR without inventing a product API early.
-- **Follow-up**: Grow scripts under `test/lira_scripts/`; keep illegal keyword cases in `examples/v0/illegal/`.
+- **Follow-up**: Grow scripts under `test/lira_scripts/`; keep illegal keyword cases in `examples/v0/illegal/`. Superseded in layout detail by D031 (scope folders).
+
+## D032 — F14 nullable types (`T?`)
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-11
+- **Decision**: Trailing `?` marks nullable types as `{ kind: "nullable", inner }`. Emit TS `T | null` / Python `T | None`. Null checks use `== null` / `!= null`. This is not general union syntax.
+- **Rationale**: Honest “absent” values for `get`/`load` without opening the full union design surface.
+- **Follow-up**: `test/lira_scripts/shared/features/f14_nullable/`; notes_app `NoteStore.get -> Note?`.
+
+## D033 — F15 throw
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-11
+- **Decision**: `throw <string>` in callable/nested bodies. IR `{ op: "throw", value }`. Emit TS `throw new Error(...)` / Python `raise Exception(...)`. Illegal at module top level. No `try`/`catch` in this slice.
+- **Rationale**: Fail-closed portable error for missing entities and invalid input.
+- **Follow-up**: `test/lira_scripts/shared/features/f15_throw/`; illegal `examples/v0/illegal/throw-outside-callable/`.
+
+## D031 — Script target scopes (folders)
+
+- **Status**: accepted
+- **Scope**: project
+- **Date**: 2026-08-11
+- **Decision**: Scripts live under `test/lira_scripts/{shared,ts,py}/…`. Scope selects emit targets (`shared` → all languages; `ts`/`py` → that language only). Goldens strip the scope segment (`shared/xy.lira` → `lira_dsl/xy.json` + `lira_output/{ts,py}/xy.*`). Post-scope paths must be unique across scopes. Keyword correctness is an authoring rule, not a pipeline gate.
+- **Rationale**: Some demos cannot be portable (e.g. target-native map/reduce patterns); scopes keep the pipeline honest without inventing a shared/ tree under dsl/output.
+- **Follow-up**: Add further language folders when emitters land; optional later probe of “which languages can emit this script.”

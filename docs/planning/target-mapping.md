@@ -24,6 +24,7 @@ Default mode for the pipeline: prefer `exact` / `compatible`. Anything `unsuppor
 | `number` | `number` | `float` | compatible | Python has `int`/`float`; Lira `number` maps to `float` for now |
 | `boolean` | `boolean` | `bool` | exact | |
 | `null` | `null` | `None` | compatible | Nullability models differ |
+| `T?` | `T \| null` | `T \| None` | compatible | Nullable only — not general unions |
 | named type (`Note`) | `Note` | `Note` | exact | Same identifier; module/import rules still apply |
 | `interface` | `interface` | `typing.Protocol` | compatible | Structural in both; Python Protocols are opt-in typing |
 | `class` | `class` | `class` | exact | |
@@ -41,7 +42,7 @@ Default mode for the pipeline: prefer `exact` / `compatible`. Anything `unsuppor
 
 | Concept | Status | Why |
 |---|---|---|
-| union types | unsupported | Targets disagree heavily |
+| union types (`A \| B`) | unsupported | Targets disagree heavily; use `T?` for nullability only |
 | generics beyond `list`/`map` | unsupported | Large design surface |
 | nested `map` types | unsupported | Deferred past v1 collections |
 | tuples / sets | unsupported | Need dedicated IR first |
@@ -81,6 +82,7 @@ Default mode for the pipeline: prefer `exact` / `compatible`. Anything `unsuppor
 | `and` / `or` / `not` | `&&` / `\|\|` / `!` | `and` / `or` / `not` | exact | Lira keeps keyword forms |
 | `if` / `else` | `if` / `else` | `if` / `else` | exact | Indentation blocks in Lira |
 | `for x in xs` | `for (const x of xs)` | `for x in xs` | exact | Indentation body; no `while`/`break`/`continue` yet |
+| `throw "msg"` | `throw new Error("msg")` | `raise Exception("msg")` | compatible | String messages only in v1; no `try`/`catch` yet |
 
 ## Modules and exports
 
@@ -100,6 +102,7 @@ Default mode for the pipeline: prefer `exact` / `compatible`. Anything `unsuppor
 3. Prefer failing the pipeline over emitting misleading code.
 4. Strength `compatible` is OK for v0 tests; document the gap in the Notes column.
 5. PHP (or a third target) must get its own column before it is added to `tools/emitters.mjs`.
+6. Portable feature scripts live under `test/lira_scripts/shared/`. Non-portable demos go under `test/lira_scripts/<target>/` (D031).
 
 ## How to extend
 
@@ -107,6 +110,6 @@ When adding a type feature:
 
 1. Name the **Lira semantic intent**
 2. Fill TS + Python cells and strength
-3. Add parser/IR + `test/lira_scripts/features/...`
+3. Add parser/IR + `test/lira_scripts/shared/features/...` (or `lira_scripts/<target>/…` if not portable)
 4. `npm run generate && npm test`
 5. Record the decision in [decision-log.md](decision-log.md)

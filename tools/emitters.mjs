@@ -9,6 +9,7 @@ function mod(node, name) {
 function emitTsType(t) {
   if (!t) return "void";
   if (typeof t === "object" && t) {
+    if (t.kind === "nullable") return `${emitTsType(t.inner)} | null`;
     if (t.kind === "list") return `${emitTsType(t.element)}[]`;
     if (t.kind === "map") {
       return `Record<${emitTsType(t.key)}, ${emitTsType(t.value)}>`;
@@ -23,6 +24,7 @@ function emitTsType(t) {
 function emitPyType(t) {
   if (!t) return "None";
   if (typeof t === "object" && t) {
+    if (t.kind === "nullable") return `${emitPyType(t.inner)} | None`;
     if (t.kind === "list") return `list[${emitPyType(t.element)}]`;
     if (t.kind === "map") {
       return `dict[${emitPyType(t.key)}, ${emitPyType(t.value)}]`;
@@ -143,6 +145,9 @@ function emitTsStmt(stmt, indent) {
     if (stmt.value == null) return `${pad}return;`;
     return `${pad}return ${emitTsExpr(stmt.value)};`;
   }
+  if (stmt.op === "throw") {
+    return `${pad}throw new Error(${emitTsExpr(stmt.value)});`;
+  }
   if (stmt.op === "assign") {
     return `${pad}${stmt.name} = ${emitTsExpr(stmt.value)};`;
   }
@@ -176,6 +181,9 @@ function emitPyStmt(stmt, indent) {
   if (stmt.op === "return") {
     if (stmt.value == null) return `${pad}return`;
     return `${pad}return ${emitPyExpr(stmt.value)}`;
+  }
+  if (stmt.op === "throw") {
+    return `${pad}raise Exception(${emitPyExpr(stmt.value)})`;
   }
   if (stmt.op === "assign") {
     return `${pad}${stmt.name} = ${emitPyExpr(stmt.value)}`;
