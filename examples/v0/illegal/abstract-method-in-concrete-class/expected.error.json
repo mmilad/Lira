@@ -1,0 +1,5 @@
+{
+  "legal": false,
+  "error": "abstract method requires an abstract class owner",
+  "rules": ["keyword-matrix-v0 abstract method note"]
+}

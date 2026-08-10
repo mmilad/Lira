@@ -1,0 +1,28 @@
+{
+  "module": {
+    "id": "mod_demo",
+    "op": "module",
+    "name": "demo"
+  },
+  "body": [
+    {
+      "id": "decl_User",
+      "op": "define",
+      "kind": "class",
+      "name": "User",
+      "modifiers": {},
+      "extends": null,
+      "implements": [],
+      "members": []
+    },
+    {
+      "id": "decl_greet",
+      "op": "define",
+      "kind": "function",
+      "name": "greet",
+      "modifiers": {},
+      "params": [],
+      "body": []
+    }
+  ]
+}

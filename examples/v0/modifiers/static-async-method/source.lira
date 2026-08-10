@@ -1,0 +1,4 @@
+module demo
+
+define class Factory
+  define static async method create

@@ -1,0 +1,16 @@
+{
+  "module": {
+    "id": "mod_demo",
+    "op": "module",
+    "name": "demo"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "pkg",
+      "style": "namespace",
+      "alias": "utils"
+    }
+  ]
+}

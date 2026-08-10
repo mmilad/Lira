@@ -1,0 +1,19 @@
+{
+  "module": {
+    "id": "mod_demo",
+    "op": "module",
+    "name": "demo"
+  },
+  "body": [
+    {
+      "id": "decl_Admin",
+      "op": "define",
+      "kind": "class",
+      "name": "Admin",
+      "modifiers": {},
+      "extends": "User",
+      "implements": ["Auditable", "Persistable"],
+      "members": []
+    }
+  ]
+}

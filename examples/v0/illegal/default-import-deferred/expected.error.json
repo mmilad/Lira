@@ -1,0 +1,5 @@
+{
+  "legal": false,
+  "error": "default import is deferred in v0 and must be rejected",
+  "rules": ["D013", "keyword-matrix-v0 import default"]
+}

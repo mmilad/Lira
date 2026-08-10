@@ -1,0 +1,5 @@
+{
+  "legal": false,
+  "error": "declaration is incomplete: export is a modifier and method name is missing; also export is invalid on method",
+  "rules": ["D004", "D006"]
+}

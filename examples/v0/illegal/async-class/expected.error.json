@@ -1,0 +1,5 @@
+{
+  "legal": false,
+  "error": "async is invalid on class",
+  "rules": ["keyword-matrix-v0 async/class"]
+}

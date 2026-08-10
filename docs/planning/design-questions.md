@@ -4,6 +4,25 @@
 
 The goal is to make unresolved semantic questions explicit before implementation locks them in.
 
+## Resolved for keyword→DSL v0
+
+Accepted answers live in [decision-log.md](decision-log.md), [keyword-matrix-v0.md](keyword-matrix-v0.md), and [keyword-dsl-v0.md](keyword-dsl-v0.md).
+
+| Question | Decision |
+|---|---|
+| A1 `define` | **D002** keep `define` |
+| A2 modifier order | **D003** flexible source, normalized IR |
+| A3 modifiers before kind | prefix descriptors; kind before name (**D004**) |
+| B1 alias binding | **D008** binds to previous item |
+| B2 namespace import | `import all ... as` allowed; default deferred (**D013**) |
+| B4 default export | deferred (**D013**) |
+| C1 interface vs contract | deferred (**D012**) |
+| D1 function vs method | scope + explicit kinds (**D009**) |
+| G unsupported semantics | backends deferred; matrix rejects invalid/deferred now (**D010**, **D011**) |
+| H source vs IR | IR is the contract (**D001**) |
+
+Open questions below remain backlog unless promoted via [revision-protocol.md](revision-protocol.md).
+
 ## A. Declaration grammar
 
 ### A1. Do declarations need `define`?

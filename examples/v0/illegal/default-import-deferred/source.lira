@@ -1,0 +1,3 @@
+module demo
+
+import default from "pkg" as x

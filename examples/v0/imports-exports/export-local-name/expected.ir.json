@@ -1,0 +1,26 @@
+{
+  "module": {
+    "id": "mod_demo",
+    "op": "module",
+    "name": "demo"
+  },
+  "body": [
+    {
+      "id": "decl_User",
+      "op": "define",
+      "kind": "class",
+      "name": "User",
+      "modifiers": {},
+      "extends": null,
+      "implements": [],
+      "members": []
+    },
+    {
+      "id": "exp_1",
+      "op": "export",
+      "items": [
+        { "name": "User", "alias": null }
+      ]
+    }
+  ]
+}

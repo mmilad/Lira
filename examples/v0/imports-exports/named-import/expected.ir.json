@@ -1,0 +1,21 @@
+{
+  "module": {
+    "id": "mod_demo",
+    "op": "module",
+    "name": "demo"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./models",
+      "style": "named",
+      "items": [
+        {
+          "name": "User",
+          "alias": null
+        }
+      ]
+    }
+  ]
+}

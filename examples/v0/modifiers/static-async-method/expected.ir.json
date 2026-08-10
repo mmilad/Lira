@@ -1,0 +1,32 @@
+{
+  "module": {
+    "id": "mod_demo",
+    "op": "module",
+    "name": "demo"
+  },
+  "body": [
+    {
+      "id": "decl_Factory",
+      "op": "define",
+      "kind": "class",
+      "name": "Factory",
+      "modifiers": {},
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_create",
+          "op": "define",
+          "kind": "method",
+          "name": "create",
+          "modifiers": {
+            "async": true,
+            "static": true
+          },
+          "params": [],
+          "body": []
+        }
+      ]
+    }
+  ]
+}

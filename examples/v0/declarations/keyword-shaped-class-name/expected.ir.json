@@ -1,0 +1,19 @@
+{
+  "module": {
+    "id": "mod_demo",
+    "op": "module",
+    "name": "demo"
+  },
+  "body": [
+    {
+      "id": "decl_export",
+      "op": "define",
+      "kind": "class",
+      "name": "export",
+      "modifiers": {},
+      "extends": null,
+      "implements": [],
+      "members": []
+    }
+  ]
+}

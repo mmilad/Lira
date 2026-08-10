@@ -1,0 +1,5 @@
+{
+  "legal": false,
+  "error": "define method is invalid at module scope; use define function",
+  "rules": ["D009", "keyword-matrix-v0 scope validity"]
+}

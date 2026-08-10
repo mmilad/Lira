@@ -1,0 +1,30 @@
+{
+  "module": {
+    "id": "mod_demo",
+    "op": "module",
+    "name": "demo"
+  },
+  "body": [
+    {
+      "id": "decl_User",
+      "op": "define",
+      "kind": "class",
+      "name": "User",
+      "modifiers": {},
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_id",
+          "op": "define",
+          "kind": "property",
+          "name": "id",
+          "modifiers": {
+            "private": true,
+            "readonly": true
+          }
+        }
+      ]
+    }
+  ]
+}

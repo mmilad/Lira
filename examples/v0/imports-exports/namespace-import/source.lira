@@ -1,0 +1,3 @@
+module demo
+
+import all from "pkg" as utils

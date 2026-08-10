@@ -1,0 +1,5 @@
+{
+  "legal": false,
+  "error": "export is invalid on method; use visibility modifiers for members",
+  "rules": ["D006", "keyword-matrix-v0 export/method"]
+}

@@ -1,0 +1,4 @@
+module demo
+
+define class User
+define function greet

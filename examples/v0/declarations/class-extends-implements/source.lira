@@ -1,0 +1,3 @@
+module demo
+
+define class Admin extends User implements Auditable, Persistable

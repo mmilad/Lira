@@ -1,0 +1,5 @@
+{
+  "legal": false,
+  "error": "visibility modifiers are invalid on module-level function",
+  "rules": ["D007", "keyword-matrix-v0 private/function"]
+}

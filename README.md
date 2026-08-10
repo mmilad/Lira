@@ -78,17 +78,32 @@ The exact syntax and semantic model are **not stable yet**. The first milestone 
 
 ```text
 Lira/
-├─ docs/       design notes and IR specification
-├─ examples/   example Lira programs
-├─ spec/       machine-readable specification work
+├─ docs/                 design notes and IR specification
+│  └─ planning/          vision, decisions, keyword→DSL v0
+├─ examples/
+│  └─ v0/                keyword composition corpus
+├─ .cursor/skills/       project Cursor skills
 └─ README.md
 ```
+
+## Current experiment
+
+Keyword → DSL v0: freeze how declaration/import keywords compose into `.lira` and normalize to IR. No transpilers yet.
+
+Start here:
+
+- [docs/planning/vision.md](docs/planning/vision.md)
+- [docs/planning/experiment-v0.md](docs/planning/experiment-v0.md)
+- [docs/planning/keyword-dsl-v0.md](docs/planning/keyword-dsl-v0.md)
+- [docs/planning/keyword-matrix-v0.md](docs/planning/keyword-matrix-v0.md)
+- Checker: `node tools/lira_keyword_dsl.mjs check`
+- Optional Cursor skill: `.cursor/skills/lira-keyword-dsl/`
 
 ## Status
 
 **Experimental / pre-alpha.**
 
-The project is currently defining its semantic core. Compatibility is not guaranteed yet.
+The project is defining its keyword→DSL surface before compilers. Compatibility is not guaranteed yet.
 
 ## License
 
