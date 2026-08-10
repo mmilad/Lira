@@ -42,7 +42,7 @@ The goal is to allow change without drifting from the original idea in [vision.m
 
 7. **Do not invent compiler work to rescue unclear DSL**
    - If a keyword composition is ambiguous, fix the DSL/matrix first.
-   - Backends remain deferred until the keyword→DSL surface is stable.
+   - The TypeScript/Python emitters now exist, but they must map only from [target-mapping.md](target-mapping.md) — never paper over an unclear DSL with backend-specific hacks. New constructs need a matrix/DSL decision and a mapping row before an emitter emits them.
 
 ## Quick checklist
 

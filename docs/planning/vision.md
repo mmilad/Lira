@@ -1,6 +1,6 @@
 # Lira Vision
 
-> Status: frozen for the keyword→DSL experiment. Change only via [revision-protocol.md](revision-protocol.md).
+> Status: the core idea is frozen. Change the north-star principles only via [revision-protocol.md](revision-protocol.md); the "current phase" section tracks where implementation actually is.
 
 ## Original idea
 
@@ -10,7 +10,7 @@ Lira separates **program intent** from **target syntax**.
 producer (human / AI / tool)
   → constrained Lira representation
   → canonical IR
-  → deterministic backends (later)
+  → deterministic backends
   → TypeScript / Python / ...
 ```
 
@@ -41,33 +41,35 @@ Perfect “any language” coverage is impossible. Lira still aims at a **generi
 
 Enrichment is driven by what those first backends need in common — not by copying any one language. Constructs that cannot be preserved honestly stay `unsupported` (or deferred), never silently weakened.
 
-## Current phase (v0 keyword→DSL)
+## Where we are now
 
-Prove that a small **keyword model** can compose into a clear **DSL surface** and normalize to IR.
+The initial keyword→DSL v0 experiment **passed**: a small keyword model composes into a clear DSL surface and normalizes to canonical IR, enforced by a checker and a project Cursor skill.
 
-In scope:
+Since then the surface has grown into a small **executable DSL** and early backends have landed:
 
-- declaration keywords and kinds
-- modifiers and valid combinations
-- scope rules that affect keyword meaning
-- import/export keyword composition
-- DSL spelling → canonical IR normalization
+- a parser + validator (`tools/lira_keyword_dsl.mjs`) producing canonical IR;
+- an executable feature set F1–F15 (signatures/return, bindings, expressions, calls/construct, members, constructors, interfaces, operators, `if`/`else`, collections, `for`-in, nullable types, `throw`);
+- deterministic **TypeScript and Python emitters** (`tools/emitters.mjs`);
+- a committed-golden test pipeline (`.lira` → IR → target source) via `npm run generate` / `npm test`.
 
-Out of scope for this phase:
+The transpilers are intentionally early. The current north star is a **minimal runnable proof-of-concept app**: one Lira source compiled to TypeScript and Python that actually executes with matching observable behavior. See [roadmap.md](roadmap.md) for the milestones.
 
-- backends / transpilers / CLI
-- parser implementation
-- full expression and control-flow language
-- rich type system
+## Still out of scope (for now)
+
+- a runnable module/import resolution + program entry point *(next milestone)*
+- rich type system beyond the small portable set
+- `while` / `try`-`catch` / pattern matching / comprehensions
+- a public compiler API package and packaged CLI (currently pipeline-internal)
 - large SLM benchmarks
 
-## Success criteria for this phase
+## Success criteria (updated)
 
 1. Vision and revision docs keep the original idea intact.
-2. The v0 keyword matrix has no silent `maybe`s.
-3. The keyword→DSL spec shows spelling and IR normalization for covered constructs.
-4. The example corpus covers main legal and illegal keyword compositions.
-5. A project Cursor skill can author/review examples against those docs without inventing extra language.
+2. The keyword matrix has no silent `maybe`s on the covered surface.
+3. The keyword→DSL spec shows spelling and IR normalization for every covered construct.
+4. The example corpus covers the main legal and illegal keyword compositions.
+5. The project Cursor skill authors/reviews examples against the docs without inventing extra language.
+6. New constructs enter only feature-by-feature, each with a decision-log entry, target-mapping row, and golden tests.
 
 ## Non-goals (general)
 

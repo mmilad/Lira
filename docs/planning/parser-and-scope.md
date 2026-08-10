@@ -1,6 +1,6 @@
 # Parser, Scope and Contextual Keywords
 
-> Status: planning draft. These rules are intentionally designed before implementation.
+> Status: these rules are now **implemented** in `tools/lira_keyword_dsl.mjs` (indentation-owned scope, kind-before-name, contextual keywords, alias-binds-to-previous). Kept as the design rationale; the parser is the source of truth, and resolved answers live in [decision-log.md](decision-log.md).
 
 This document captures several language-design rules that are more fundamental than the final keyword list.
 

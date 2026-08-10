@@ -1,6 +1,6 @@
 # Lira IR v0 — Draft
 
-> This is a discussion draft, not a compatibility promise.
+> This is a discussion draft, not a compatibility promise. Much of the candidate surface below is now **implemented**: structure (`module`/`import`/`class`/`interface`/`function`/`method`/`property`/`variable`/`constant`), expressions (literals, refs, member/index access, calls, construction, unary/binary ops), and statements (`assign`/`set`, expression/`call`, `return`, `if`/`else`, `for`-in, `throw`). Still candidates only: `while`, `try`/`catch`, and richer types. The concrete IR shape the parser emits is shown in [planning/keyword-dsl-v0.md](planning/keyword-dsl-v0.md).
 
 The purpose of v0 is to discover the smallest semantic surface that can express useful programs across multiple target languages.
 
