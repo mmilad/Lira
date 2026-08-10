@@ -17,11 +17,19 @@ Accepted answers live in [decision-log.md](decision-log.md), [keyword-matrix-v0.
 | B2 namespace import | `import all ... as` allowed; default deferred (**D013**) |
 | B4 default export | deferred (**D013**) |
 | C1 interface vs contract | **D025** use `interface` |
+| C3 abstract methods | only in abstract class/interface, no body (matrix + **D025**) |
 | D1 function vs method | scope + explicit kinds (**D009**) |
-| G unsupported semantics | backends deferred; matrix rejects invalid/deferred now (**D010**, **D011**) |
+| D3 calls vs construct | explicit `call` / `construct` (**D022**) |
+| E1 `assign` vs `set` | `assign` rebinds a variable; `set` mutates property/index (**D020**, **D024**) |
+| E2 immutable bindings | `variable` / `constant` keywords (**D020**) |
+| F1 loops | `for`-in in core; `while` deferred (**D030**) |
+| F3 exceptions | `throw <string>` in core; `try`/`catch` deferred (**D033**) |
+| G unsupported semantics | matrix rejects invalid/deferred; emitters follow [target-mapping.md](target-mapping.md) (**D010**, **D026**) |
 | H source vs IR | IR is the contract (**D001**) |
 
-Open questions below remain backlog unless promoted via [revision-protocol.md](revision-protocol.md).
+> Note: the executable-DSL decisions **D019–D033** resolved the F-series (signatures, bindings, expressions, calls, members, constructors, interfaces, operators, `if`, collections, `for`, nullable, `throw`) and delivered TypeScript/Python emitters. **D011** ("backends deferred") is superseded by **D018**.
+
+Still open (backlog unless promoted via [revision-protocol.md](revision-protocol.md)): D2 named arguments, F2 pattern matching, B3 re-export, C2 `class`/`struct`/`record` distinctions, `while` loops, and `try`/`catch`/`finally`.
 
 ## A. Declaration grammar
 

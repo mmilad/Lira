@@ -1,6 +1,6 @@
 # Keyword and Composition Model
 
-> Status: planning draft. This document is intentionally question-heavy.
+> Status: original exploratory draft, kept for rationale. Many questions here are now **resolved** — the authoritative surface is [keyword-dsl-v0.md](keyword-dsl-v0.md), [keyword-matrix-v0.md](keyword-matrix-v0.md), and [decision-log.md](decision-log.md). Read this for the "why", not the current rules.
 
 Lira should avoid copying the grammar of any one target language. The external language needs to be easy for humans and small language models to produce while mapping into a strict canonical IR.
 

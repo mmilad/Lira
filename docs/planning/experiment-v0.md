@@ -1,5 +1,7 @@
 # Experiment v0 — Keyword → DSL
 
+> Status: **passed.** This experiment established the frozen keyword→DSL v0 surface. The project has since expanded it into an executable DSL with TypeScript/Python emitters — see [roadmap.md](roadmap.md) and [decision-log.md](decision-log.md) (D018–D033). This document is retained as the record of the original experiment and its scope.
+
 > Goal: prove a small keyword model can compose into a clear Lira DSL and normalize to IR, exercised through a Cursor skill.
 
 ## Hypothesis
@@ -15,13 +17,15 @@ If keyword roles, composition rules, and a scoped compatibility matrix are expli
 - legal / illegal / boundary example corpus
 - project Cursor skill trial
 
-## Out of scope
+## Out of scope (for the original experiment)
 
 - TypeScript / Python / PHP backends
 - parser / CLI implementation
 - full expression and control-flow DSL
 - rich type system
 - large SLM benchmark suite
+
+> Since promoted past this line via the revision protocol: the parser, the TypeScript and Python emitters, and an executable expression/control-flow surface (F1–F15) now exist. A packaged CLI, PHP, a rich type system, and SLM benchmarks remain out of scope. See [roadmap.md](roadmap.md).
 
 ## Artifacts
 

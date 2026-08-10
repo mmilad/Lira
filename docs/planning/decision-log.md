@@ -101,12 +101,12 @@ Format:
 
 ## D011 — Backends deferred
 
-- **Status**: accepted
+- **Status**: superseded
 - **Scope**: v0
 - **Date**: 2026-08-10
 - **Decision**: No TypeScript/Python/PHP transpiler work in this phase.
 - **Rationale**: Keyword→DSL clarity first; compilers must not invent missing semantics.
-- **Follow-up**: Resume after corpus + skill trial stabilize the surface.
+- **Follow-up**: Superseded by **D018** — after the corpus + skill trial stabilized the surface, TypeScript and Python emitters landed in the golden test pipeline. Emitters must still follow [target-mapping.md](target-mapping.md) and never invent missing semantics.
 
 ## D012 — Interface / contract naming
 

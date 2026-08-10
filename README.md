@@ -49,7 +49,7 @@ class UserService
     return user
 ```
 
-The exact syntax and semantic model are **not stable yet**. The first milestone is to define the smallest useful IR before committing to implementation details.
+The exact syntax and semantic model are still evolving. A canonical IR and early TypeScript/Python emitters already exist; the surface grows feature-by-feature (see the [decision log](docs/planning/decision-log.md)) rather than committing to a full language up front.
 
 ## Planned architecture
 
@@ -86,17 +86,26 @@ Lira/
 └─ README.md
 ```
 
-## Current experiment
+## Current state
 
-Keyword → DSL v0: freeze how declaration/import keywords compose into `.lira` and normalize to IR. No transpilers yet.
+The keyword→DSL v0 surface is frozen and has grown into a small **executable DSL** (features F1–F15: signatures, bindings, expressions, calls, members, constructors, interfaces, operators, `if`/`else`, collections, `for`-in, nullable types, `throw`).
+
+Early **transpilers exist**: deterministic TypeScript and Python emitters run over the canonical IR. A committed-golden test pipeline parses `.lira` → IR → target source so regressions are caught by diff.
+
+```text
+.lira  →  parser + validator  →  canonical IR  →  { TypeScript, Python } emitters
+```
+
+Everything is still early: the emitted source is not yet a runnable program (module/import resolution, an entry point, and runtime output are the next milestones). See the [roadmap](docs/planning/roadmap.md) for the path toward a minimal proof-of-concept app.
 
 Start here:
 
-- [docs/planning/vision.md](docs/planning/vision.md)
-- [docs/planning/experiment-v0.md](docs/planning/experiment-v0.md)
-- [docs/planning/keyword-dsl-v0.md](docs/planning/keyword-dsl-v0.md)
-- [docs/planning/keyword-matrix-v0.md](docs/planning/keyword-matrix-v0.md)
-- [docs/planning/target-mapping.md](docs/planning/target-mapping.md)
+- [docs/planning/vision.md](docs/planning/vision.md) — north star
+- [docs/planning/roadmap.md](docs/planning/roadmap.md) — status and next steps toward a PoC app
+- [docs/planning/keyword-dsl-v0.md](docs/planning/keyword-dsl-v0.md) — DSL spelling + IR normalization (incl. executable surface)
+- [docs/planning/keyword-matrix-v0.md](docs/planning/keyword-matrix-v0.md) — allowed/invalid keyword combinations
+- [docs/planning/target-mapping.md](docs/planning/target-mapping.md) — Lira → TS/Python mapping contract
+- [docs/planning/decision-log.md](docs/planning/decision-log.md) — accepted decisions (D001–D033)
 - Checker: `node tools/lira_keyword_dsl.mjs check`
 - Test pipeline: `npm run generate` then `npm test` (see [test/README.md](test/README.md))
 - Optional Cursor skill: `.cursor/skills/lira-keyword-dsl/`
@@ -105,7 +114,7 @@ Start here:
 
 **Experimental / pre-alpha.**
 
-The project is defining its keyword→DSL surface before compilers. Compatibility is not guaranteed yet.
+The keyword→DSL surface and canonical IR are the stable-ish core; the TypeScript and Python emitters are early and evolving. Compatibility is not guaranteed yet.
 
 ## License
 
