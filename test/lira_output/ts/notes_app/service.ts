@@ -17,7 +17,7 @@ export class NoteService {
     this.store.save(note);
     return note;
   }
-  public async load(id: string): Note {
+  public async load(id: string): Promise<Note> {
     let note: Note | null = this.store.get(id);
     if ((note == null)) {
       throw new Error("missing note");

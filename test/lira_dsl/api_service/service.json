@@ -1,0 +1,583 @@
+{
+  "module": {
+    "id": "mod_api_service",
+    "op": "module",
+    "name": "api_service"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./models",
+      "style": "named",
+      "items": [
+        {
+          "name": "User",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "imp_2",
+      "op": "import",
+      "source": "./store",
+      "style": "named",
+      "items": [
+        {
+          "name": "UserStore",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "decl_UserApiService",
+      "op": "define",
+      "kind": "class",
+      "name": "UserApiService",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_store",
+          "op": "define",
+          "kind": "property",
+          "name": "store",
+          "modifiers": {
+            "private": true
+          },
+          "type": "UserStore"
+        },
+        {
+          "id": "decl_nextId",
+          "op": "define",
+          "kind": "property",
+          "name": "nextId",
+          "modifiers": {
+            "private": true
+          },
+          "type": "number",
+          "init": {
+            "kind": "literal",
+            "type": "number",
+            "value": 1
+          }
+        },
+        {
+          "id": "decl_UserApiService_constructor",
+          "op": "define",
+          "kind": "constructor",
+          "name": "constructor",
+          "modifiers": {},
+          "params": [
+            {
+              "name": "store",
+              "type": "UserStore"
+            }
+          ],
+          "body": [
+            {
+              "id": "stmt_1",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "store"
+                ]
+              },
+              "value": {
+                "kind": "ref",
+                "name": "store"
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_createUser",
+          "op": "define",
+          "kind": "method",
+          "name": "createUser",
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "returns": "User",
+          "body": [
+            {
+              "id": "decl_safeName",
+              "op": "define",
+              "kind": "variable",
+              "name": "safeName",
+              "modifiers": {},
+              "type": "string",
+              "init": {
+                "kind": "ref",
+                "name": "name"
+              }
+            },
+            {
+              "id": "stmt_2",
+              "op": "if",
+              "condition": {
+                "kind": "binary",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "name": "name"
+                },
+                "right": {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": ""
+                }
+              },
+              "then": [
+                {
+                  "id": "stmt_3",
+                  "op": "assign",
+                  "name": "safeName",
+                  "value": {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "anonymous"
+                  }
+                }
+              ],
+              "else": null
+            },
+            {
+              "id": "decl_id",
+              "op": "define",
+              "kind": "variable",
+              "name": "id",
+              "modifiers": {},
+              "type": "string",
+              "init": {
+                "kind": "literal",
+                "type": "string",
+                "value": "u1"
+              }
+            },
+            {
+              "id": "stmt_4",
+              "op": "if",
+              "condition": {
+                "kind": "binary",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "nextId"
+                  ]
+                },
+                "right": {
+                  "kind": "literal",
+                  "type": "number",
+                  "value": 2
+                }
+              },
+              "then": [
+                {
+                  "id": "stmt_5",
+                  "op": "assign",
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "u2"
+                  }
+                }
+              ],
+              "else": null
+            },
+            {
+              "id": "stmt_6",
+              "op": "if",
+              "condition": {
+                "kind": "binary",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "nextId"
+                  ]
+                },
+                "right": {
+                  "kind": "literal",
+                  "type": "number",
+                  "value": 3
+                }
+              },
+              "then": [
+                {
+                  "id": "stmt_7",
+                  "op": "assign",
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "u3"
+                  }
+                }
+              ],
+              "else": null
+            },
+            {
+              "id": "decl_user",
+              "op": "define",
+              "kind": "variable",
+              "name": "user",
+              "modifiers": {},
+              "type": "User",
+              "init": {
+                "kind": "construct",
+                "type": "User",
+                "args": [
+                  {
+                    "kind": "ref",
+                    "name": "id"
+                  },
+                  {
+                    "kind": "ref",
+                    "name": "safeName"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "stmt_8",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "nextId"
+                ]
+              },
+              "value": {
+                "kind": "binary",
+                "op": "+",
+                "left": {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "nextId"
+                  ]
+                },
+                "right": {
+                  "kind": "literal",
+                  "type": "number",
+                  "value": 1
+                }
+              }
+            },
+            {
+              "id": "stmt_9",
+              "op": "call",
+              "callee": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "store",
+                  "save"
+                ]
+              },
+              "args": [
+                {
+                  "kind": "ref",
+                  "name": "user"
+                }
+              ]
+            },
+            {
+              "id": "stmt_10",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "user"
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_getUser",
+          "op": "define",
+          "kind": "method",
+          "name": "getUser",
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "returns": {
+            "kind": "nullable",
+            "inner": "User"
+          },
+          "body": [
+            {
+              "id": "stmt_11",
+              "op": "return",
+              "value": {
+                "kind": "call",
+                "callee": {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "store",
+                    "get"
+                  ]
+                },
+                "args": [
+                  {
+                    "kind": "ref",
+                    "name": "id"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_listUsers",
+          "op": "define",
+          "kind": "method",
+          "name": "listUsers",
+          "modifiers": {
+            "public": true
+          },
+          "params": [],
+          "returns": {
+            "kind": "list",
+            "element": "User"
+          },
+          "body": [
+            {
+              "id": "stmt_12",
+              "op": "return",
+              "value": {
+                "kind": "call",
+                "callee": {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "store",
+                    "list"
+                  ]
+                },
+                "args": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_route",
+          "op": "define",
+          "kind": "method",
+          "name": "route",
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "path",
+              "type": "string"
+            }
+          ],
+          "returns": "string",
+          "body": [
+            {
+              "id": "stmt_13",
+              "op": "if",
+              "condition": {
+                "kind": "binary",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "name": "path"
+                },
+                "right": {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": "/users"
+                }
+              },
+              "then": [
+                {
+                  "id": "decl_users",
+                  "op": "define",
+                  "kind": "variable",
+                  "name": "users",
+                  "modifiers": {},
+                  "type": {
+                    "kind": "list",
+                    "element": "User"
+                  },
+                  "init": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "member",
+                      "parts": [
+                        "this",
+                        "store",
+                        "list"
+                      ]
+                    },
+                    "args": []
+                  }
+                },
+                {
+                  "id": "decl_count",
+                  "op": "define",
+                  "kind": "variable",
+                  "name": "count",
+                  "modifiers": {},
+                  "type": "number",
+                  "init": {
+                    "kind": "literal",
+                    "type": "number",
+                    "value": 0
+                  }
+                },
+                {
+                  "id": "stmt_14",
+                  "op": "for",
+                  "name": "user",
+                  "iterable": {
+                    "kind": "ref",
+                    "name": "users"
+                  },
+                  "body": [
+                    {
+                      "id": "stmt_15",
+                      "op": "assign",
+                      "name": "count",
+                      "value": {
+                        "kind": "binary",
+                        "op": "+",
+                        "left": {
+                          "kind": "ref",
+                          "name": "count"
+                        },
+                        "right": {
+                          "kind": "literal",
+                          "type": "number",
+                          "value": 1
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "stmt_16",
+                  "op": "if",
+                  "condition": {
+                    "kind": "binary",
+                    "op": "==",
+                    "left": {
+                      "kind": "ref",
+                      "name": "count"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "type": "number",
+                      "value": 0
+                    }
+                  },
+                  "then": [
+                    {
+                      "id": "stmt_17",
+                      "op": "return",
+                      "value": {
+                        "kind": "literal",
+                        "type": "string",
+                        "value": "[]"
+                      }
+                    }
+                  ],
+                  "else": null
+                },
+                {
+                  "id": "decl_first",
+                  "op": "define",
+                  "kind": "variable",
+                  "name": "first",
+                  "modifiers": {},
+                  "type": "User",
+                  "init": {
+                    "kind": "index",
+                    "target": {
+                      "kind": "ref",
+                      "name": "users"
+                    },
+                    "index": {
+                      "kind": "literal",
+                      "type": "number",
+                      "value": 0
+                    }
+                  }
+                },
+                {
+                  "id": "stmt_18",
+                  "op": "return",
+                  "value": {
+                    "kind": "member",
+                    "parts": [
+                      "first",
+                      "name"
+                    ]
+                  }
+                }
+              ],
+              "else": null
+            },
+            {
+              "id": "stmt_19",
+              "op": "return",
+              "value": {
+                "kind": "literal",
+                "type": "string",
+                "value": "not-found"
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_health",
+          "op": "define",
+          "kind": "method",
+          "name": "health",
+          "modifiers": {
+            "public": true
+          },
+          "params": [],
+          "returns": "string",
+          "body": [
+            {
+              "id": "stmt_20",
+              "op": "return",
+              "value": {
+                "kind": "literal",
+                "type": "string",
+                "value": "ok"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

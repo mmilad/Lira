@@ -1,0 +1,355 @@
+{
+  "module": {
+    "id": "mod_api_main",
+    "op": "module",
+    "name": "api_main"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./service",
+      "style": "named",
+      "items": [
+        {
+          "name": "UserApiService",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "imp_2",
+      "op": "import",
+      "source": "./memory_store",
+      "style": "named",
+      "items": [
+        {
+          "name": "InMemoryUserStore",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "decl_main",
+      "op": "define",
+      "kind": "function",
+      "name": "main",
+      "modifiers": {
+        "export": true
+      },
+      "params": [],
+      "body": [
+        {
+          "id": "decl_store",
+          "op": "define",
+          "kind": "variable",
+          "name": "store",
+          "modifiers": {},
+          "init": {
+            "kind": "construct",
+            "type": "InMemoryUserStore",
+            "args": []
+          }
+        },
+        {
+          "id": "decl_api",
+          "op": "define",
+          "kind": "variable",
+          "name": "api",
+          "modifiers": {},
+          "init": {
+            "kind": "construct",
+            "type": "UserApiService",
+            "args": [
+              {
+                "kind": "ref",
+                "name": "store"
+              }
+            ]
+          }
+        },
+        {
+          "id": "stmt_1",
+          "op": "call",
+          "callee": {
+            "kind": "ref",
+            "name": "print"
+          },
+          "args": [
+            {
+              "kind": "literal",
+              "type": "string",
+              "value": "api: starting user-service"
+            }
+          ]
+        },
+        {
+          "id": "stmt_2",
+          "op": "call",
+          "callee": {
+            "kind": "ref",
+            "name": "print"
+          },
+          "args": [
+            {
+              "kind": "call",
+              "callee": {
+                "kind": "member",
+                "parts": [
+                  "api",
+                  "health"
+                ]
+              },
+              "args": []
+            }
+          ]
+        },
+        {
+          "id": "decl_alice",
+          "op": "define",
+          "kind": "variable",
+          "name": "alice",
+          "modifiers": {},
+          "init": {
+            "kind": "call",
+            "callee": {
+              "kind": "member",
+              "parts": [
+                "api",
+                "createUser"
+              ]
+            },
+            "args": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "alice"
+              }
+            ]
+          }
+        },
+        {
+          "id": "stmt_3",
+          "op": "call",
+          "callee": {
+            "kind": "ref",
+            "name": "print"
+          },
+          "args": [
+            {
+              "kind": "member",
+              "parts": [
+                "alice",
+                "name"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "decl_bob",
+          "op": "define",
+          "kind": "variable",
+          "name": "bob",
+          "modifiers": {},
+          "init": {
+            "kind": "call",
+            "callee": {
+              "kind": "member",
+              "parts": [
+                "api",
+                "createUser"
+              ]
+            },
+            "args": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "bob"
+              }
+            ]
+          }
+        },
+        {
+          "id": "stmt_4",
+          "op": "call",
+          "callee": {
+            "kind": "ref",
+            "name": "print"
+          },
+          "args": [
+            {
+              "kind": "member",
+              "parts": [
+                "bob",
+                "name"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "decl_found",
+          "op": "define",
+          "kind": "variable",
+          "name": "found",
+          "modifiers": {},
+          "init": {
+            "kind": "call",
+            "callee": {
+              "kind": "member",
+              "parts": [
+                "api",
+                "getUser"
+              ]
+            },
+            "args": [
+              {
+                "kind": "member",
+                "parts": [
+                  "alice",
+                  "id"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "stmt_5",
+          "op": "if",
+          "condition": {
+            "kind": "binary",
+            "op": "==",
+            "left": {
+              "kind": "ref",
+              "name": "found"
+            },
+            "right": {
+              "kind": "literal",
+              "type": "null",
+              "value": null
+            }
+          },
+          "then": [
+            {
+              "id": "stmt_6",
+              "op": "call",
+              "callee": {
+                "kind": "ref",
+                "name": "print"
+              },
+              "args": [
+                {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": "missing"
+                }
+              ]
+            }
+          ],
+          "else": [
+            {
+              "id": "stmt_7",
+              "op": "call",
+              "callee": {
+                "kind": "ref",
+                "name": "print"
+              },
+              "args": [
+                {
+                  "kind": "member",
+                  "parts": [
+                    "found",
+                    "name"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "decl_routeResult",
+          "op": "define",
+          "kind": "variable",
+          "name": "routeResult",
+          "modifiers": {},
+          "init": {
+            "kind": "call",
+            "callee": {
+              "kind": "member",
+              "parts": [
+                "api",
+                "route"
+              ]
+            },
+            "args": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "/users"
+              }
+            ]
+          }
+        },
+        {
+          "id": "stmt_8",
+          "op": "call",
+          "callee": {
+            "kind": "ref",
+            "name": "print"
+          },
+          "args": [
+            {
+              "kind": "ref",
+              "name": "routeResult"
+            }
+          ]
+        },
+        {
+          "id": "decl_users",
+          "op": "define",
+          "kind": "variable",
+          "name": "users",
+          "modifiers": {},
+          "init": {
+            "kind": "call",
+            "callee": {
+              "kind": "member",
+              "parts": [
+                "api",
+                "listUsers"
+              ]
+            },
+            "args": []
+          }
+        },
+        {
+          "id": "stmt_9",
+          "op": "for",
+          "name": "user",
+          "iterable": {
+            "kind": "ref",
+            "name": "users"
+          },
+          "body": [
+            {
+              "id": "stmt_10",
+              "op": "call",
+              "callee": {
+                "kind": "ref",
+                "name": "print"
+              },
+              "args": [
+                {
+                  "kind": "member",
+                  "parts": [
+                    "user",
+                    "name"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

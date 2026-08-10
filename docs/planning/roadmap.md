@@ -25,6 +25,9 @@ The semantics-first exploration (phases below) is largely done, and implementati
 | Canonical IR | implemented (v0) | parser output |
 | Backends / transpilers | early: TypeScript + Python | `tools/emitters.mjs` |
 | Golden test pipeline | implemented | `tools/lira_pipeline.mjs` |
+| Runtime parity harness | implemented for apps | `tools/lira_runtime.mjs` |
+| Portable `print` / `append` / `main` entry | done | D034–D036 |
+| Module/import resolution (relative Python) | done | D037 |
 | Portability policy (strengths, fail-closed) | partial | validator rejects; emitters don't yet emit diagnostics |
 | Traceability (node IDs, source maps) | not started | — |
 | Packaged `compile()` API + CLI | not started | — |
@@ -32,13 +35,15 @@ The semantics-first exploration (phases below) is largely done, and implementati
 
 ### Known gaps that block a *runnable* app
 
-These are the concrete blockers, observed in current emitter output:
+Most M1–M3 blockers are now addressed:
 
-1. **Module/import resolution is not real.** Python emits `from "./models" import Note` (invalid Python — should be `from .models import Note`); TypeScript emits `import { Note } from "./models"` without a resolvable specifier. Emitted files don't yet form a runnable module graph.
-2. **No entry point / runner.** Nothing calls the top-level functions; there is no `main` and no per-target runnable entry file.
-3. **No observable output primitive.** There is no portable `print`/log, so two targets can't be compared at runtime.
-4. **`async` return types are wrong in TS.** `async load(): Note` should be `Promise<Note>` (Python's `async def` is already correct).
-5. **Emit is only diffed as text**, never compiled or executed, so "it looks right" is the only current guarantee.
+1. ~~Module/import resolution~~ — Python relative imports + `__future__` annotations (D037).
+2. ~~Entry point / runner~~ — `main.lira` + auto bootstrap (D036).
+3. ~~Observable output~~ — `call print` (D034).
+4. ~~`async` return types in TS~~ — `Promise<T>` wrapping.
+5. ~~Emit only diffed as text~~ — `notes_app` and `api_service` run in `npm test`.
+
+Remaining gaps: packaged CLI, compile-only gate without run, HTTP/network primitives for real API servers.
 
 ## Path to the proof-of-concept app
 

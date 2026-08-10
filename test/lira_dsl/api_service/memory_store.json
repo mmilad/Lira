@@ -1,0 +1,213 @@
+{
+  "module": {
+    "id": "mod_api_memory_store",
+    "op": "module",
+    "name": "api_memory_store"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./models",
+      "style": "named",
+      "items": [
+        {
+          "name": "User",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "imp_2",
+      "op": "import",
+      "source": "./store",
+      "style": "named",
+      "items": [
+        {
+          "name": "UserStore",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "decl_InMemoryUserStore",
+      "op": "define",
+      "kind": "class",
+      "name": "InMemoryUserStore",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [
+        "UserStore"
+      ],
+      "members": [
+        {
+          "id": "decl_users",
+          "op": "define",
+          "kind": "property",
+          "name": "users",
+          "modifiers": {
+            "private": true
+          },
+          "type": {
+            "kind": "list",
+            "element": "User"
+          },
+          "init": {
+            "kind": "list",
+            "elements": []
+          }
+        },
+        {
+          "id": "decl_get",
+          "op": "define",
+          "kind": "method",
+          "name": "get",
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "returns": {
+            "kind": "nullable",
+            "inner": "User"
+          },
+          "body": [
+            {
+              "id": "stmt_1",
+              "op": "for",
+              "name": "user",
+              "iterable": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "users"
+                ]
+              },
+              "body": [
+                {
+                  "id": "stmt_2",
+                  "op": "if",
+                  "condition": {
+                    "kind": "binary",
+                    "op": "==",
+                    "left": {
+                      "kind": "member",
+                      "parts": [
+                        "user",
+                        "id"
+                      ]
+                    },
+                    "right": {
+                      "kind": "ref",
+                      "name": "id"
+                    }
+                  },
+                  "then": [
+                    {
+                      "id": "stmt_3",
+                      "op": "return",
+                      "value": {
+                        "kind": "ref",
+                        "name": "user"
+                      }
+                    }
+                  ],
+                  "else": null
+                }
+              ]
+            },
+            {
+              "id": "stmt_4",
+              "op": "return",
+              "value": {
+                "kind": "literal",
+                "type": "null",
+                "value": null
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_save",
+          "op": "define",
+          "kind": "method",
+          "name": "save",
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "user",
+              "type": "User"
+            }
+          ],
+          "returns": "User",
+          "body": [
+            {
+              "id": "stmt_5",
+              "op": "call",
+              "callee": {
+                "kind": "ref",
+                "name": "append"
+              },
+              "args": [
+                {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "users"
+                  ]
+                },
+                {
+                  "kind": "ref",
+                  "name": "user"
+                }
+              ]
+            },
+            {
+              "id": "stmt_6",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "user"
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_list",
+          "op": "define",
+          "kind": "method",
+          "name": "list",
+          "modifiers": {
+            "public": true
+          },
+          "params": [],
+          "returns": {
+            "kind": "list",
+            "element": "User"
+          },
+          "body": [
+            {
+              "id": "stmt_7",
+              "op": "return",
+              "value": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "users"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

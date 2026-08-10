@@ -6,6 +6,18 @@
   },
   "body": [
     {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./models",
+      "style": "named",
+      "items": [
+        {
+          "name": "Note",
+          "alias": null
+        }
+      ]
+    },
+    {
       "id": "decl_NoteStore",
       "op": "define",
       "kind": "interface",

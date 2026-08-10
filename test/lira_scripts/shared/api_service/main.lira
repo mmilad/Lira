@@ -1,0 +1,24 @@
+module api_main
+
+import UserApiService from "./service"
+import InMemoryUserStore from "./memory_store"
+
+define export function main()
+  define variable store = construct InMemoryUserStore()
+  define variable api = construct UserApiService(store)
+  call print("api: starting user-service")
+  call print(api.health())
+  define variable alice = call api.createUser("alice")
+  call print(alice.name)
+  define variable bob = call api.createUser("bob")
+  call print(bob.name)
+  define variable found = call api.getUser(alice.id)
+  if found == null
+    call print("missing")
+  else
+    call print(found.name)
+  define variable routeResult = call api.route("/users")
+  call print(routeResult)
+  define variable users = call api.listUsers()
+  for user in users
+    call print(user.name)

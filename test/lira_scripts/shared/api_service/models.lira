@@ -1,0 +1,8 @@
+module api_models
+
+define export class User
+  define public readonly property id: string
+  define public property name: string
+  define constructor(id: string, name: string)
+    set this.id = id
+    set this.name = name

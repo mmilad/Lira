@@ -6,6 +6,26 @@ function mod(node, name) {
   return Boolean(node.modifiers && node.modifiers[name]);
 }
 
+/** Lira `./foo` → Python relative module `.foo` */
+function emitPyImportModule(source) {
+  if (source.startsWith("./")) return `.${source.slice(2)}`;
+  if (source.startsWith("../")) return source;
+  return source;
+}
+
+/** Lira `./foo` → TS sibling specifier (tsx resolves .ts without extension) */
+function emitTsImportSpecifier(source) {
+  return source;
+}
+
+function isPrintCallee(callee) {
+  return callee?.kind === "ref" && callee.name === "print";
+}
+
+function isAppendCallee(callee) {
+  return callee?.kind === "ref" && callee.name === "append";
+}
+
 function emitTsType(t) {
   if (!t) return "void";
   if (typeof t === "object" && t) {
@@ -61,6 +81,14 @@ function emitTsExpr(expr) {
     case "binary":
       return `(${emitTsExpr(expr.left)} ${emitTsBinaryOp(expr.op)} ${emitTsExpr(expr.right)})`;
     case "call": {
+      if (isPrintCallee(expr.callee)) {
+        const args = (expr.args || []).map(emitTsExpr).join(", ");
+        return `console.log(${args})`;
+      }
+      if (isAppendCallee(expr.callee)) {
+        const [list, item] = expr.args || [];
+        return `${emitTsExpr(list)}.push(${emitTsExpr(item)})`;
+      }
       const callee =
         expr.callee.kind === "member"
           ? expr.callee.parts.join(".")
@@ -103,6 +131,14 @@ function emitPyExpr(expr) {
     case "binary":
       return `(${emitPyExpr(expr.left)} ${expr.op} ${emitPyExpr(expr.right)})`;
     case "call": {
+      if (isPrintCallee(expr.callee)) {
+        const args = (expr.args || []).map(emitPyExpr).join(", ");
+        return `print(${args})`;
+      }
+      if (isAppendCallee(expr.callee)) {
+        const [list, item] = expr.args || [];
+        return `${emitPyExpr(list)}.append(${emitPyExpr(item)})`;
+      }
       let callee;
       if (expr.callee.kind === "member") {
         callee = expr.callee.parts.map((p) => (p === "this" ? "self" : p)).join(".");
@@ -253,6 +289,12 @@ function emitTsVisibility(node) {
   return "";
 }
 
+function emitTsCallableReturn(node) {
+  const ret = emitTsType(node.returns);
+  if (mod(node, "async")) return `Promise<${ret}>`;
+  return ret;
+}
+
 function emitTsMember(member, indent) {
   const pad = "  ".repeat(indent);
   const vis = emitTsVisibility(member);
@@ -261,7 +303,7 @@ function emitTsMember(member, indent) {
   const asy = mod(member, "async") ? "async " : "";
   const ro = mod(member, "readonly") ? "readonly " : "";
   const params = emitTsParams(member.params);
-  const ret = emitTsType(member.returns);
+  const ret = emitTsCallableReturn(member);
 
   if (member.kind === "constructor") {
     const body = emitTsBody(member.body, indent + 1);
@@ -284,13 +326,14 @@ function emitTsMember(member, indent) {
 
 function emitTsDecl(node) {
   if (node.op === "import") {
+    const from = emitTsImportSpecifier(node.source);
     if (node.style === "namespace") {
-      return `import * as ${node.alias} from ${JSON.stringify(node.source)};`;
+      return `import * as ${node.alias} from ${JSON.stringify(from)};`;
     }
     const parts = node.items.map((it) =>
       it.alias ? `${it.name} as ${it.alias}` : it.name,
     );
-    return `import { ${parts.join(", ")} } from ${JSON.stringify(node.source)};`;
+    return `import { ${parts.join(", ")} } from ${JSON.stringify(from)};`;
   }
   if (node.op === "export") {
     const parts = node.items.map((it) =>
@@ -319,7 +362,7 @@ function emitTsDecl(node) {
     const exp = mod(node, "export") ? "export " : "";
     const asy = mod(node, "async") ? "async " : "";
     const params = emitTsParams(node.params);
-    const ret = emitTsType(node.returns);
+    const ret = emitTsCallableReturn(node);
     const body = emitTsBody(node.body, 1);
     return `${exp}${asy}function ${node.name}(${params}): ${ret} {\n${body}}\n`;
   }
@@ -338,11 +381,25 @@ function emitTsDecl(node) {
   return `// unsupported define kind: ${node.kind}`;
 }
 
-export function emitTypeScript(ir) {
+function hasExportedMain(ir) {
+  return (ir.body || []).some(
+    (n) =>
+      n.op === "define" &&
+      n.kind === "function" &&
+      n.name === "main" &&
+      mod(n, "export"),
+  );
+}
+
+export function emitTypeScript(ir, options = {}) {
   const lines = [];
   lines.push(`// module ${ir.module.name}`);
   for (const node of ir.body || []) {
     lines.push(emitTsDecl(node));
+    lines.push("");
+  }
+  if (options.entry && hasExportedMain(ir)) {
+    lines.push("main();");
     lines.push("");
   }
   return lines.join("\n").replace(/\n+$/, "\n");
@@ -388,10 +445,11 @@ function emitPyDecl(node) {
     if (node.style === "namespace") {
       return `import ${JSON.stringify(node.source)} as ${node.alias}  # lira-namespace`;
     }
+    const moduleName = emitPyImportModule(node.source);
     const parts = node.items.map((it) =>
       it.alias ? `${it.name} as ${it.alias}` : it.name,
     );
-    return `from ${JSON.stringify(node.source)} import ${parts.join(", ")}`;
+    return `from ${moduleName} import ${parts.join(", ")}`;
   }
   if (node.op === "export") {
     const names = node.items.map((it) => it.alias || it.name);
@@ -450,9 +508,10 @@ function needsAbc(ir) {
   );
 }
 
-export function emitPython(ir) {
+export function emitPython(ir, options = {}) {
   const lines = [];
   lines.push(`# module ${ir.module.name}`);
+  lines.push("from __future__ import annotations");
   const imports = [];
   if (needsAbc(ir)) imports.push("from abc import ABC, abstractmethod");
   if (needsTypingProtocol(ir)) imports.push("from typing import Protocol");
@@ -460,6 +519,11 @@ export function emitPython(ir) {
   if (imports.length) lines.push("");
   for (const node of ir.body || []) {
     lines.push(emitPyDecl(node));
+    lines.push("");
+  }
+  if (options.entry && hasExportedMain(ir)) {
+    lines.push("if __name__ == \"__main__\":");
+    lines.push("    main()");
     lines.push("");
   }
   return lines.join("\n").replace(/\n+$/, "\n");

@@ -90,13 +90,13 @@ Lira/
 
 The keyword→DSL v0 surface is frozen and has grown into a small **executable DSL** (features F1–F15: signatures, bindings, expressions, calls, members, constructors, interfaces, operators, `if`/`else`, collections, `for`-in, nullable types, `throw`).
 
-Early **transpilers exist**: deterministic TypeScript and Python emitters run over the canonical IR. A committed-golden test pipeline parses `.lira` → IR → target source so regressions are caught by diff.
+Early **transpilers exist**: deterministic TypeScript and Python emitters run over the canonical IR. A committed-golden test pipeline parses `.lira` → IR → target source so regressions are caught by diff. Runnable apps (`notes_app`, `api_service`) execute in both targets with stdout parity checks.
 
 ```text
-.lira  →  parser + validator  →  canonical IR  →  { TypeScript, Python } emitters
+.lira  →  parser + validator  →  canonical IR  →  { TypeScript, Python } emitters  →  run + compare stdout
 ```
 
-Everything is still early: the emitted source is not yet a runnable program (module/import resolution, an entry point, and runtime output are the next milestones). See the [roadmap](docs/planning/roadmap.md) for the path toward a minimal proof-of-concept app.
+The emitted source is now runnable for multi-module apps with a `main` entry. HTTP/network layers are not yet in the portable surface.
 
 Start here:
 

@@ -305,3 +305,39 @@ Format:
 - **Decision**: Scripts live under `test/lira_scripts/{shared,ts,py}/…`. Scope selects emit targets (`shared` → all languages; `ts`/`py` → that language only). Goldens strip the scope segment (`shared/xy.lira` → `lira_dsl/xy.json` + `lira_output/{ts,py}/xy.*`). Post-scope paths must be unique across scopes. Keyword correctness is an authoring rule, not a pipeline gate.
 - **Rationale**: Some demos cannot be portable (e.g. target-native map/reduce patterns); scopes keep the pipeline honest without inventing a shared/ tree under dsl/output.
 - **Follow-up**: Add further language folders when emitters land; optional later probe of “which languages can emit this script.”
+
+## D034 — F16 print (portable output)
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: `call print(expr)` maps to `console.log` / `print`. No bare `print(...)` sugar in Lira source.
+- **Rationale**: Runnable apps need observable output for cross-target parity tests.
+- **Follow-up**: `test/lira_scripts/shared/features/f16_print/`.
+
+## D035 — F17 append (portable list growth)
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: `call append(list, item)` maps to `push` / `append`. Index assignment on empty Python lists is not portable.
+- **Rationale**: In-memory stores need list growth without target-specific APIs in Lira source.
+- **Follow-up**: `notes_app` and `api_service` memory stores.
+
+## D036 — Program entry (`main`)
+
+- **Status**: accepted
+- **Scope**: executable-dsl + emitters
+- **Date**: 2026-08-10
+- **Decision**: `define export function main` in `main.lira` triggers entry bootstrap: TS appends `main();`, Python adds `if __name__ == "__main__": main()`.
+- **Rationale**: Multi-module apps need a runnable entry without a separate harness file per target.
+- **Follow-up**: `notes_app/main.lira`, `api_service/main.lira`; runtime parity in `tools/lira_runtime.mjs`.
+
+## D037 — Python relative imports + forward refs
+
+- **Status**: accepted
+- **Scope**: emitters
+- **Date**: 2026-08-10
+- **Decision**: Lira `import X from "./module"` emits `from .module import X` in Python. All Python modules emit `from __future__ import annotations` for forward references (e.g. `createEmpty() -> Note`).
+- **Rationale**: Emitted multi-file apps must import and run as packages.
+- **Follow-up**: M1 compile/run gate; `api_service` runtime parity.

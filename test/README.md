@@ -31,4 +31,4 @@ npm test           # re-parse/re-emit and diff against committed files
 
 Only **legal** `.lira` scripts belong here. Illegal keyword cases stay under `examples/v0/illegal/`.
 
-Portable feature slices live under `test/lira_scripts/shared/features/`. Language-local demos go under `test/lira_scripts/ts/` or `…/py/`. The `shared/notes_app/` folder is the end-to-end structural+executable sketch.
+Portable feature slices live under `test/lira_scripts/shared/features/`. Language-local demos go under `test/lira_scripts/ts/` or `…/py/`. Runnable apps: `shared/notes_app/` and `shared/api_service/` (runtime stdout parity checked in `npm test`).

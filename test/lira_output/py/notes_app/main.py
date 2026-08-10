@@ -1,11 +1,18 @@
 # module notes_main
-from "./service" import NoteService
+from __future__ import annotations
+from .service import NoteService
 
-from "./models" import Note as NoteModel
+from .memory_store import MemoryNoteStore
 
-APP_NAME = "notes"
+def main() -> None:
+    store = MemoryNoteStore()
+    service = NoteService(store)
+    print("notes: starting")
+    created = service.create("hello")
+    print(created.title)
+    title = service.firstTitle()
+    print(title)
 
-def boot(service: NoteService) -> NoteModel:
-    note = NoteModel("1", "hello")
-    service.create(note.title)
-    return note
+
+if __name__ == "__main__":
+    main()

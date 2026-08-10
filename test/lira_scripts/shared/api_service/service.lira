@@ -1,0 +1,40 @@
+module api_service
+
+import User from "./models"
+import UserStore from "./store"
+
+define export class UserApiService
+  define private property store: UserStore
+  define private property nextId: number = 1
+  define constructor(store: UserStore)
+    set this.store = store
+  define public method createUser(name: string) -> User
+    define variable safeName: string = name
+    if name == ""
+      assign safeName = "anonymous"
+    define variable id: string = "u1"
+    if this.nextId == 2
+      assign id = "u2"
+    if this.nextId == 3
+      assign id = "u3"
+    define variable user: User = construct User(id, safeName)
+    set this.nextId = this.nextId + 1
+    call this.store.save(user)
+    return user
+  define public method getUser(id: string) -> User?
+    return this.store.get(id)
+  define public method listUsers() -> list[User]
+    return this.store.list()
+  define public method route(path: string) -> string
+    if path == "/users"
+      define variable users: list[User] = this.store.list()
+      define variable count: number = 0
+      for user in users
+        assign count = count + 1
+      if count == 0
+        return "[]"
+      define variable first: User = users[0]
+      return first.name
+    return "not-found"
+  define public method health() -> string
+    return "ok"

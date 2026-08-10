@@ -1,0 +1,17 @@
+module notes_memory_store
+
+import Note from "./models"
+import NoteStore from "./store"
+
+define export class MemoryNoteStore implements NoteStore
+  define private property notes: list[Note] = list()
+  define public method get(id: string) -> Note?
+    for note in this.notes
+      if note.id == id
+        return note
+    return null
+  define public method save(note: Note) -> Note
+    call append(this.notes, note)
+    return note
+  define public method list() -> list[Note]
+    return this.notes

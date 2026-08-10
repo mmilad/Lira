@@ -1,0 +1,80 @@
+{
+  "module": {
+    "id": "mod_api_store",
+    "op": "module",
+    "name": "api_store"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./models",
+      "style": "named",
+      "items": [
+        {
+          "name": "User",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "decl_UserStore",
+      "op": "define",
+      "kind": "interface",
+      "name": "UserStore",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_get",
+          "op": "define",
+          "kind": "method",
+          "name": "get",
+          "modifiers": {},
+          "params": [
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "returns": {
+            "kind": "nullable",
+            "inner": "User"
+          },
+          "body": null
+        },
+        {
+          "id": "decl_save",
+          "op": "define",
+          "kind": "method",
+          "name": "save",
+          "modifiers": {},
+          "params": [
+            {
+              "name": "user",
+              "type": "User"
+            }
+          ],
+          "returns": "User",
+          "body": null
+        },
+        {
+          "id": "decl_list",
+          "op": "define",
+          "kind": "method",
+          "name": "list",
+          "modifiers": {},
+          "params": [],
+          "returns": {
+            "kind": "list",
+            "element": "User"
+          },
+          "body": null
+        }
+      ]
+    }
+  ]
+}

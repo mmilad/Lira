@@ -20,60 +20,85 @@
     {
       "id": "imp_2",
       "op": "import",
-      "source": "./models",
+      "source": "./memory_store",
       "style": "named",
       "items": [
         {
-          "name": "Note",
-          "alias": "NoteModel"
+          "name": "MemoryNoteStore",
+          "alias": null
         }
       ]
     },
     {
-      "id": "decl_APP_NAME",
-      "op": "define",
-      "kind": "constant",
-      "name": "APP_NAME",
-      "modifiers": {
-        "export": true
-      },
-      "init": {
-        "kind": "literal",
-        "type": "string",
-        "value": "notes"
-      }
-    },
-    {
-      "id": "decl_boot",
+      "id": "decl_main",
       "op": "define",
       "kind": "function",
-      "name": "boot",
+      "name": "main",
       "modifiers": {
         "export": true
       },
-      "params": [
-        {
-          "name": "service",
-          "type": "NoteService"
-        }
-      ],
-      "returns": "NoteModel",
+      "params": [],
       "body": [
         {
-          "id": "decl_note",
+          "id": "decl_store",
           "op": "define",
           "kind": "variable",
-          "name": "note",
+          "name": "store",
           "modifiers": {},
           "init": {
             "kind": "construct",
-            "type": "NoteModel",
+            "type": "MemoryNoteStore",
+            "args": []
+          }
+        },
+        {
+          "id": "decl_service",
+          "op": "define",
+          "kind": "variable",
+          "name": "service",
+          "modifiers": {},
+          "init": {
+            "kind": "construct",
+            "type": "NoteService",
             "args": [
               {
-                "kind": "literal",
-                "type": "string",
-                "value": "1"
-              },
+                "kind": "ref",
+                "name": "store"
+              }
+            ]
+          }
+        },
+        {
+          "id": "stmt_1",
+          "op": "call",
+          "callee": {
+            "kind": "ref",
+            "name": "print"
+          },
+          "args": [
+            {
+              "kind": "literal",
+              "type": "string",
+              "value": "notes: starting"
+            }
+          ]
+        },
+        {
+          "id": "decl_created",
+          "op": "define",
+          "kind": "variable",
+          "name": "created",
+          "modifiers": {},
+          "init": {
+            "kind": "call",
+            "callee": {
+              "kind": "member",
+              "parts": [
+                "service",
+                "create"
+              ]
+            },
+            "args": [
               {
                 "kind": "literal",
                 "type": "string",
@@ -83,32 +108,53 @@
           }
         },
         {
-          "id": "stmt_1",
+          "id": "stmt_2",
           "op": "call",
           "callee": {
-            "kind": "member",
-            "parts": [
-              "service",
-              "create"
-            ]
+            "kind": "ref",
+            "name": "print"
           },
           "args": [
             {
               "kind": "member",
               "parts": [
-                "note",
+                "created",
                 "title"
               ]
             }
           ]
         },
         {
-          "id": "stmt_2",
-          "op": "return",
-          "value": {
-            "kind": "ref",
-            "name": "note"
+          "id": "decl_title",
+          "op": "define",
+          "kind": "variable",
+          "name": "title",
+          "modifiers": {},
+          "init": {
+            "kind": "call",
+            "callee": {
+              "kind": "member",
+              "parts": [
+                "service",
+                "firstTitle"
+              ]
+            },
+            "args": []
           }
+        },
+        {
+          "id": "stmt_3",
+          "op": "call",
+          "callee": {
+            "kind": "ref",
+            "name": "print"
+          },
+          "args": [
+            {
+              "kind": "ref",
+              "name": "title"
+            }
+          ]
         }
       ]
     }

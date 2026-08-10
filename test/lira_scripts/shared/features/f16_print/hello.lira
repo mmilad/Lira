@@ -1,0 +1,5 @@
+module f16_print
+
+define export function demo()
+  call print("hello")
+  call print("world")

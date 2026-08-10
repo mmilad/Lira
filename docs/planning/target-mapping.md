@@ -76,20 +76,22 @@ Default mode for the pipeline: prefer `exact` / `compatible`. Anything `unsuppor
 | `call x.y(a)` | `x.y(a)` | `x.y(a)` | exact | Explicit `call` in Lira source only |
 | `construct T(a)` | `new T(a)` | `T(a)` | exact | |
 | `set this.x = v` | `this.x = v` | `self.x = v` | exact | `this` → `self` in Python |
-| `async` function/method | `async` | `async def` | exact | |
+| `async` function/method | `async` + `Promise<T>` return | `async def` | exact | TS wraps declared return type in `Promise<>` |
 | `+ - * /` | same | same | exact | |
 | `== != < <= > >=` | same | same | exact | |
 | `and` / `or` / `not` | `&&` / `\|\|` / `!` | `and` / `or` / `not` | exact | Lira keeps keyword forms |
 | `if` / `else` | `if` / `else` | `if` / `else` | exact | Indentation blocks in Lira |
 | `for x in xs` | `for (const x of xs)` | `for x in xs` | exact | Indentation body; no `while`/`break`/`continue` yet |
 | `throw "msg"` | `throw new Error("msg")` | `raise Exception("msg")` | compatible | String messages only in v1; no `try`/`catch` yet |
+| `call print(expr)` | `console.log(expr)` | `print(expr)` | exact | Portable observable output (D034) |
+| `call append(list, item)` | `list.push(item)` | `list.append(item)` | exact | Portable list growth (D035) |
 
 ## Modules and exports
 
 | Lira | TypeScript | Python | Strength | Notes |
 |---|---|---|---|---|
 | `module name` | file/module comment + ESM file | file module | compatible | Lira `module` is the portable unit (D016) |
-| `import A from "x"` | `import { A } from "x"` | `from "x" import A` | compatible | String source is opaque path/id for now |
+| `import A from "x"` | `import { A } from "x"` | `from .x import A` when `./` | compatible | Lira `./foo` → Python relative `.foo` |
 | `import A as B from "x"` | `import { A as B } from "x"` | `from "x" import A as B` | exact | |
 | `import all from "x" as ns` | `import * as ns from "x"` | `import "x" as ns` (approx) | compatible | Python packaging differs |
 | `export` on define | `export` keyword | comment / package export policy | compatible | Meaning: public module API |

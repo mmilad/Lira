@@ -1,7 +1,8 @@
 # module notes_service
-from "./models" import Note
+from __future__ import annotations
+from .models import Note
 
-from "./store" import NoteStore
+from .store import NoteStore
 
 class NoteService:
     store: NoteStore

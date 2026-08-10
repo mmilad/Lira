@@ -1,0 +1,92 @@
+{
+  "module": {
+    "id": "mod_api_models",
+    "op": "module",
+    "name": "api_models"
+  },
+  "body": [
+    {
+      "id": "decl_User",
+      "op": "define",
+      "kind": "class",
+      "name": "User",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [],
+      "members": [
+        {
+          "id": "decl_id",
+          "op": "define",
+          "kind": "property",
+          "name": "id",
+          "modifiers": {
+            "public": true,
+            "readonly": true
+          },
+          "type": "string"
+        },
+        {
+          "id": "decl_name",
+          "op": "define",
+          "kind": "property",
+          "name": "name",
+          "modifiers": {
+            "public": true
+          },
+          "type": "string"
+        },
+        {
+          "id": "decl_User_constructor",
+          "op": "define",
+          "kind": "constructor",
+          "name": "constructor",
+          "modifiers": {},
+          "params": [
+            {
+              "name": "id",
+              "type": "string"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "body": [
+            {
+              "id": "stmt_1",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "id"
+                ]
+              },
+              "value": {
+                "kind": "ref",
+                "name": "id"
+              }
+            },
+            {
+              "id": "stmt_2",
+              "op": "set",
+              "target": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "name"
+                ]
+              },
+              "value": {
+                "kind": "ref",
+                "name": "name"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 # module f5_members
+from __future__ import annotations
 class Account:
     name = "anon"
 
