@@ -47,7 +47,8 @@
           "name": "store",
           "modifiers": {
             "private": true
-          }
+          },
+          "type": "NoteStore"
         },
         {
           "id": "decl_NoteService_constructor",
@@ -101,6 +102,7 @@
               "kind": "variable",
               "name": "safeTitle",
               "modifiers": {},
+              "type": "string",
               "init": {
                 "kind": "ref",
                 "name": "title"
@@ -142,6 +144,7 @@
               "kind": "variable",
               "name": "note",
               "modifiers": {},
+              "type": "Note",
               "init": {
                 "kind": "construct",
                 "type": "Note",
@@ -235,7 +238,10 @@
             "public": true
           },
           "params": [],
-          "returns": "Note",
+          "returns": {
+            "kind": "list",
+            "element": "Note"
+          },
           "body": [
             {
               "id": "stmt_7",
@@ -251,6 +257,106 @@
                   ]
                 },
                 "args": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_firstTitle",
+          "op": "define",
+          "kind": "method",
+          "name": "firstTitle",
+          "modifiers": {
+            "public": true
+          },
+          "params": [],
+          "returns": "string",
+          "body": [
+            {
+              "id": "decl_notes",
+              "op": "define",
+              "kind": "variable",
+              "name": "notes",
+              "modifiers": {},
+              "type": {
+                "kind": "list",
+                "element": "Note"
+              },
+              "init": {
+                "kind": "call",
+                "callee": {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "store",
+                    "list"
+                  ]
+                },
+                "args": []
+              }
+            },
+            {
+              "id": "decl_result",
+              "op": "define",
+              "kind": "variable",
+              "name": "result",
+              "modifiers": {},
+              "type": "string",
+              "init": {
+                "kind": "literal",
+                "type": "string",
+                "value": ""
+              }
+            },
+            {
+              "id": "stmt_8",
+              "op": "for",
+              "name": "note",
+              "iterable": {
+                "kind": "ref",
+                "name": "notes"
+              },
+              "body": [
+                {
+                  "id": "stmt_9",
+                  "op": "if",
+                  "condition": {
+                    "kind": "binary",
+                    "op": "==",
+                    "left": {
+                      "kind": "ref",
+                      "name": "result"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "type": "string",
+                      "value": ""
+                    }
+                  },
+                  "then": [
+                    {
+                      "id": "stmt_10",
+                      "op": "assign",
+                      "name": "result",
+                      "value": {
+                        "kind": "member",
+                        "parts": [
+                          "note",
+                          "title"
+                        ]
+                      }
+                    }
+                  ],
+                  "else": null
+                }
+              ]
+            },
+            {
+              "id": "stmt_11",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "result"
               }
             }
           ]

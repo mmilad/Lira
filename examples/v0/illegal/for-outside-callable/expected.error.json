@@ -1,0 +1,5 @@
+{
+  "legal": false,
+  "error": "for is only valid inside a function, method, constructor, or if body",
+  "rules": ["F13"]
+}

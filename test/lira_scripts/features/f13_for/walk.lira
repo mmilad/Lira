@@ -1,0 +1,10 @@
+module f13_for
+
+define export function joinTitles(titles: list[string]) -> string
+  define variable out: string = ""
+  for title in titles
+    if out == ""
+      assign out = title
+    else
+      assign out = out
+  return out

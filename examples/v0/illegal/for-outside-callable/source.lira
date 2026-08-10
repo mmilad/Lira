@@ -1,0 +1,4 @@
+module demo
+
+for item in list(1, 2)
+  return item

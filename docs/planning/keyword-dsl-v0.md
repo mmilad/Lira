@@ -423,7 +423,7 @@ When converting DSL → IR:
 
 ---
 
-## Executable surface (F1–F7)
+## Executable surface (F1–F13)
 
 ### Signatures + return
 
@@ -486,13 +486,41 @@ else
 
 Precedence: `* /` → `+ -` → comparisons → `and` → `or`. Unary: `not`, `-`.
 
+### Collections (F12)
+
+Types use `list` / `map` keywords (not `T[]`):
+
+```lira
+define variable titles: list[string] = list("a", "b")
+define variable byId: map[string, Note] = map()
+set titles[0] = "x"
+set byId["1"] = note
+define variable first = titles[0]
+```
+
+- `list(...)` elements are full expressions; `map()` is empty-only in v1.
+- Index get is an expression `{ kind: "index", target, index }`.
+- `set` LHS may end in an index (`name[i]`, `a.b[i]`).
+- Member names may reuse expression keywords (`this.store.list()`).
+
+### for-in (F13)
+
+```lira
+for item in items
+  call use(item)
+```
+
+Only inside callable / nested block bodies. IR: `{ op: "for", name, iterable, body }`.
+
 ## Intentionally still out of scope
 
 - default import/export
 - nested classes
 - escaped identifiers
 - brace/`end` blocks as alternative to indentation
-- `while` / `for` / `match` / `else if` sugar
+- `while` / `break` / `continue` / `match` / `else if` sugar
+- map entry literals / comprehensions
+- tuples / sets
 - bitwise ops, `===`
 
 Do not invent spellings for out-of-scope forms; extend via revision protocol + feature tests.

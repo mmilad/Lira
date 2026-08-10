@@ -33,9 +33,11 @@ description: >-
 
 ## Allowed operations
 
-`module`, `define`, `import`, `export`, `return`, `assign`, `set`, `call`, `if`, `else`
+`module`, `define`, `import`, `export`, `return`, `assign`, `set`, `call`, `if`, `else`, `for`
 
 Boolean ops in expressions: `and`, `or`, `not` (not `&&` / `||` / `!`).
+
+Collections: `list[T]`, `map[K, V]`, `list(...)`, `map()`, index `a[i]`.
 
 ## Authoring for the test pipeline
 

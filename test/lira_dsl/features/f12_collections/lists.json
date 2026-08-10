@@ -1,0 +1,129 @@
+{
+  "module": {
+    "id": "mod_f12_collections",
+    "op": "module",
+    "name": "f12_collections"
+  },
+  "body": [
+    {
+      "id": "decl_demo",
+      "op": "define",
+      "kind": "function",
+      "name": "demo",
+      "modifiers": {
+        "export": true
+      },
+      "params": [],
+      "returns": "string",
+      "body": [
+        {
+          "id": "decl_titles",
+          "op": "define",
+          "kind": "variable",
+          "name": "titles",
+          "modifiers": {},
+          "type": {
+            "kind": "list",
+            "element": "string"
+          },
+          "init": {
+            "kind": "list",
+            "elements": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "a"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "b"
+              }
+            ]
+          }
+        },
+        {
+          "id": "stmt_1",
+          "op": "set",
+          "target": {
+            "kind": "index",
+            "target": {
+              "kind": "ref",
+              "name": "titles"
+            },
+            "index": {
+              "kind": "literal",
+              "type": "number",
+              "value": 0
+            }
+          },
+          "value": {
+            "kind": "literal",
+            "type": "string",
+            "value": "x"
+          }
+        },
+        {
+          "id": "decl_byId",
+          "op": "define",
+          "kind": "variable",
+          "name": "byId",
+          "modifiers": {},
+          "type": {
+            "kind": "map",
+            "key": "string",
+            "value": "string"
+          },
+          "init": {
+            "kind": "map",
+            "entries": []
+          }
+        },
+        {
+          "id": "stmt_2",
+          "op": "set",
+          "target": {
+            "kind": "index",
+            "target": {
+              "kind": "ref",
+              "name": "byId"
+            },
+            "index": {
+              "kind": "literal",
+              "type": "string",
+              "value": "1"
+            }
+          },
+          "value": {
+            "kind": "index",
+            "target": {
+              "kind": "ref",
+              "name": "titles"
+            },
+            "index": {
+              "kind": "literal",
+              "type": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "stmt_3",
+          "op": "return",
+          "value": {
+            "kind": "index",
+            "target": {
+              "kind": "ref",
+              "name": "byId"
+            },
+            "index": {
+              "kind": "literal",
+              "type": "string",
+              "value": "1"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

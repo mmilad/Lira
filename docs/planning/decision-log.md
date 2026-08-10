@@ -234,6 +234,24 @@ Format:
 - **Rationale**: Minimal control flow for real app logic in the pipeline.
 - **Follow-up**: `test/lira_scripts/features/f10_if/`; assign-to-constant rejected in parser.
 
+## D029 — F12 collections (list / map / index)
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: Portable containers use `list[T]` / `map[K, V]` types; literals `list(...)` and empty `map()`; index get/set via `a[i]`. Emit TS `T[]` / `Record<K,V>` and Python `list[T]` / `dict[K,V]`. No map-entry sugar or nested maps in v1. Expression keywords `list`/`map` remain valid as member names after `.`.
+- **Rationale**: Notes-style apps need real collections without adopting target-specific spellings in source.
+- **Follow-up**: `test/lira_scripts/features/f12_collections/`; mapping rows in [target-mapping.md](target-mapping.md).
+
+## D030 — F13 for-in
+
+- **Status**: accepted
+- **Scope**: executable-dsl
+- **Date**: 2026-08-10
+- **Decision**: `for name in <expr>` with indentation body; IR `{ op: "for", name, iterable, body }`. Emit TS `for (const name of …)` / Python `for name in …`. Illegal at module top level. No `while` / `break` / `continue` in this slice.
+- **Rationale**: Iteration is the missing piece after collections for portable service logic.
+- **Follow-up**: `test/lira_scripts/features/f13_for/`; illegal case `examples/v0/illegal/for-outside-callable/`.
+
 ## D016 — `module` is the portable unit
 
 - **Status**: accepted

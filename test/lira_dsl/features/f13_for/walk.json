@@ -1,0 +1,101 @@
+{
+  "module": {
+    "id": "mod_f13_for",
+    "op": "module",
+    "name": "f13_for"
+  },
+  "body": [
+    {
+      "id": "decl_joinTitles",
+      "op": "define",
+      "kind": "function",
+      "name": "joinTitles",
+      "modifiers": {
+        "export": true
+      },
+      "params": [
+        {
+          "name": "titles",
+          "type": {
+            "kind": "list",
+            "element": "string"
+          }
+        }
+      ],
+      "returns": "string",
+      "body": [
+        {
+          "id": "decl_out",
+          "op": "define",
+          "kind": "variable",
+          "name": "out",
+          "modifiers": {},
+          "type": "string",
+          "init": {
+            "kind": "literal",
+            "type": "string",
+            "value": ""
+          }
+        },
+        {
+          "id": "stmt_1",
+          "op": "for",
+          "name": "title",
+          "iterable": {
+            "kind": "ref",
+            "name": "titles"
+          },
+          "body": [
+            {
+              "id": "stmt_2",
+              "op": "if",
+              "condition": {
+                "kind": "binary",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "name": "out"
+                },
+                "right": {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": ""
+                }
+              },
+              "then": [
+                {
+                  "id": "stmt_3",
+                  "op": "assign",
+                  "name": "out",
+                  "value": {
+                    "kind": "ref",
+                    "name": "title"
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "stmt_4",
+                  "op": "assign",
+                  "name": "out",
+                  "value": {
+                    "kind": "ref",
+                    "name": "out"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "stmt_5",
+          "op": "return",
+          "value": {
+            "kind": "ref",
+            "name": "out"
+          }
+        }
+      ]
+    }
+  ]
+}

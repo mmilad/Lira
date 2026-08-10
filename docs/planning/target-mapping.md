@@ -31,14 +31,21 @@ Default mode for the pipeline: prefer `exact` / `compatible`. Anything `unsuppor
 | abstract method | `abstract …` | `@abstractmethod` | compatible | Inside `interface`, Python uses Protocol method stubs without ABC |
 | `implements X` | `implements X` | base list `(X, …)` | compatible | Python uses inheritance/Protocol subclassing, not a separate keyword |
 | `extends X` | `extends X` | base list `(X, …)` | compatible | Single inheritance assumed in early Lira |
+| `list[T]` | `T[]` | `list[T]` | exact/compatible | Element types reuse portable type names |
+| `map[K, V]` | `Record<K, V>` | `dict[K, V]` | compatible | String keys assumed common in v1 |
+| `list(...)` | `[...]` | `[...]` | exact | Element exprs; empty `list()` allowed |
+| `map()` | `{}` | `{}` | compatible | Empty only in v1; populate with `set` |
+| `a[i]` get/set | `a[i]` | `a[i]` | exact | Index is a full expression |
 
 ### Intentionally not in portable core yet
 
 | Concept | Status | Why |
 |---|---|---|
 | union types | unsupported | Targets disagree heavily |
-| generics | unsupported | Large design surface |
-| tuples / maps | unsupported | Need dedicated IR first |
+| generics beyond `list`/`map` | unsupported | Large design surface |
+| nested `map` types | unsupported | Deferred past v1 collections |
+| tuples / sets | unsupported | Need dedicated IR first |
+| map entry literals `{ k: v }` | unsupported | Use empty `map()` + `set` |
 | `any` | deferred | Too easy to launder untyped code |
 | TypeScript `type` aliases | unsupported as Lira kind | Use `interface` or named class for now |
 | Python `TypedDict` / dataclasses | unsupported as Lira kind | Backend profile territory, not core IR |
@@ -73,6 +80,7 @@ Default mode for the pipeline: prefer `exact` / `compatible`. Anything `unsuppor
 | `== != < <= > >=` | same | same | exact | |
 | `and` / `or` / `not` | `&&` / `\|\|` / `!` | `and` / `or` / `not` | exact | Lira keeps keyword forms |
 | `if` / `else` | `if` / `else` | `if` / `else` | exact | Indentation blocks in Lira |
+| `for x in xs` | `for (const x of xs)` | `for x in xs` | exact | Indentation body; no `while`/`break`/`continue` yet |
 
 ## Modules and exports
 

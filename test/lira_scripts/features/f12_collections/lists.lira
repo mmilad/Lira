@@ -1,0 +1,8 @@
+module f12_collections
+
+define export function demo() -> string
+  define variable titles: list[string] = list("a", "b")
+  set titles[0] = "x"
+  define variable byId: map[string, string] = map()
+  set byId["1"] = titles[0]
+  return byId["1"]

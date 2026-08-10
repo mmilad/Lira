@@ -8,13 +8,28 @@ function mod(node, name) {
 
 function emitTsType(t) {
   if (!t) return "void";
+  if (typeof t === "object" && t) {
+    if (t.kind === "list") return `${emitTsType(t.element)}[]`;
+    if (t.kind === "map") {
+      return `Record<${emitTsType(t.key)}, ${emitTsType(t.value)}>`;
+    }
+    if (t.kind === "named") return t.name;
+  }
   if (t === "string" || t === "number" || t === "boolean") return t;
   if (t === "null") return "null";
   return t;
 }
 
 function emitPyType(t) {
-  if (!t || t === "null") return "None";
+  if (!t) return "None";
+  if (typeof t === "object" && t) {
+    if (t.kind === "list") return `list[${emitPyType(t.element)}]`;
+    if (t.kind === "map") {
+      return `dict[${emitPyType(t.key)}, ${emitPyType(t.value)}]`;
+    }
+    if (t.kind === "named") return t.name;
+  }
+  if (t === "null") return "None";
   if (t === "string") return "str";
   if (t === "number") return "float";
   if (t === "boolean") return "bool";
@@ -55,6 +70,12 @@ function emitTsExpr(expr) {
       const args = (expr.args || []).map(emitTsExpr).join(", ");
       return `new ${expr.type}(${args})`;
     }
+    case "list":
+      return `[${(expr.elements || []).map(emitTsExpr).join(", ")}]`;
+    case "map":
+      return "{}";
+    case "index":
+      return `${emitTsExpr(expr.target)}[${emitTsExpr(expr.index)}]`;
     default:
       return `/* expr:${expr.kind} */`;
   }
@@ -93,6 +114,12 @@ function emitPyExpr(expr) {
       const args = (expr.args || []).map(emitPyExpr).join(", ");
       return `${expr.type}(${args})`;
     }
+    case "list":
+      return `[${(expr.elements || []).map(emitPyExpr).join(", ")}]`;
+    case "map":
+      return "{}";
+    case "index":
+      return `${emitPyExpr(expr.target)}[${emitPyExpr(expr.index)}]`;
     default:
       return `None  # expr:${expr.kind}`;
   }
@@ -120,7 +147,7 @@ function emitTsStmt(stmt, indent) {
     return `${pad}${stmt.name} = ${emitTsExpr(stmt.value)};`;
   }
   if (stmt.op === "set") {
-    return `${pad}${stmt.target.parts.join(".")} = ${emitTsExpr(stmt.value)};`;
+    return `${pad}${emitTsExpr(stmt.target)} = ${emitTsExpr(stmt.value)};`;
   }
   if (stmt.op === "call") {
     return `${pad}${emitTsExpr({ kind: "call", callee: stmt.callee, args: stmt.args })};`;
@@ -133,6 +160,10 @@ function emitTsStmt(stmt, indent) {
       out += ` else {\n${elseBody}${pad}}`;
     }
     return out;
+  }
+  if (stmt.op === "for") {
+    const body = emitTsBody(stmt.body, indent + 1);
+    return `${pad}for (const ${stmt.name} of ${emitTsExpr(stmt.iterable)}) {\n${body}${pad}}`;
   }
   if (stmt.op === "define") {
     return emitTsNestedDefine(stmt, indent);
@@ -150,8 +181,7 @@ function emitPyStmt(stmt, indent) {
     return `${pad}${stmt.name} = ${emitPyExpr(stmt.value)}`;
   }
   if (stmt.op === "set") {
-    const target = stmt.target.parts.map((p) => (p === "this" ? "self" : p)).join(".");
-    return `${pad}${target} = ${emitPyExpr(stmt.value)}`;
+    return `${pad}${emitPyExpr(stmt.target)} = ${emitPyExpr(stmt.value)}`;
   }
   if (stmt.op === "call") {
     return `${pad}${emitPyExpr({ kind: "call", callee: stmt.callee, args: stmt.args })}`;
@@ -164,6 +194,10 @@ function emitPyStmt(stmt, indent) {
       out += `${pad}else:\n${elseBody}`;
     }
     return out.replace(/\n$/, "");
+  }
+  if (stmt.op === "for") {
+    const body = emitPyBody(stmt.body, indent + 1);
+    return `${pad}for ${stmt.name} in ${emitPyExpr(stmt.iterable)}:\n${body}`.replace(/\n$/, "");
   }
   if (stmt.op === "define") {
     return emitPyNestedDefine(stmt, indent);

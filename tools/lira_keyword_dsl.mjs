@@ -44,6 +44,7 @@ const BODY_OWNER_SCOPES = new Set([
   "constructor",
   "if_then",
   "if_else",
+  "for_body",
 ]);
 
 const COMPARE_OPS = new Set(["==", "!=", "<=", ">=", "<", ">"]);
@@ -193,7 +194,7 @@ function tokenizeExpr(input) {
       i = j;
       continue;
     }
-    if ("(),.".includes(ch)) {
+    if ("(),.[]".includes(ch)) {
       tokens.push({ type: ch });
       i += 1;
       continue;
@@ -227,7 +228,12 @@ function tokenizeExpr(input) {
         tokens.push({ type: "boolean", value: word === "true" });
       } else if (word === "null") {
         tokens.push({ type: "null" });
-      } else if (word === "construct" || word === "call") {
+      } else if (
+        word === "construct" ||
+        word === "call" ||
+        word === "list" ||
+        word === "map"
+      ) {
         tokens.push({ type: "keyword", value: word });
       } else {
         tokens.push({ type: "id", value: word });
@@ -341,6 +347,15 @@ function parseCalleeFromParts(parts) {
   return { kind: "member", parts };
 }
 
+/** Member names may reuse expression keywords (e.g. this.store.list). */
+function takeMemberName(p) {
+  const next = p.peek();
+  if (!next) return null;
+  if (next.type === "id") return p.take().value;
+  if (next.type === "keyword") return p.take().value;
+  return null;
+}
+
 function parsePostfix(p) {
   if (p.peek()?.type === "keyword" && p.peek().value === "construct") {
     p.take();
@@ -359,21 +374,48 @@ function parsePostfix(p) {
     return parseCallTail(p);
   }
 
+  if (p.peek()?.type === "keyword" && p.peek().value === "list") {
+    p.take();
+    if (!p.match("(")) throw new Error("list literal requires ()");
+    const elements = parseArgListFromTokens(p);
+    if (!p.match(")")) throw new Error("expected ) after list elements");
+    return { kind: "list", elements };
+  }
+
+  if (p.peek()?.type === "keyword" && p.peek().value === "map") {
+    p.take();
+    if (!p.match("(")) throw new Error("map literal requires ()");
+    if (!p.match(")")) {
+      throw new Error("map() only supports empty literals in v1; populate with set");
+    }
+    return { kind: "map", entries: [] };
+  }
+
   let expr = parsePrimaryAtom(p);
 
-  // member chain / call: already partially in atom for id.id; handle trailing (args)
-  while (p.peek()?.type === "(") {
-    p.take();
-    const args = parseArgListFromTokens(p);
-    if (!p.match(")")) throw new Error("expected ) after call args");
-    const callee =
-      expr.kind === "ref"
-        ? { kind: "ref", name: expr.name }
-        : expr.kind === "member"
-          ? { kind: "member", parts: expr.parts }
-          : null;
-    if (!callee) throw new Error("invalid call target");
-    expr = { kind: "call", callee, args };
+  while (true) {
+    if (p.peek()?.type === "(") {
+      p.take();
+      const args = parseArgListFromTokens(p);
+      if (!p.match(")")) throw new Error("expected ) after call args");
+      const callee =
+        expr.kind === "ref"
+          ? { kind: "ref", name: expr.name }
+          : expr.kind === "member"
+            ? { kind: "member", parts: expr.parts }
+            : null;
+      if (!callee) throw new Error("invalid call target");
+      expr = { kind: "call", callee, args };
+      continue;
+    }
+    if (p.peek()?.type === "[") {
+      p.take();
+      const index = parseOr(p);
+      if (!p.match("]")) throw new Error("expected ] after index");
+      expr = { kind: "index", target: expr, index };
+      continue;
+    }
+    break;
   }
   return expr;
 }
@@ -381,12 +423,14 @@ function parsePostfix(p) {
 function parseCallTail(p) {
   const parts = [];
   const first = p.take();
-  if (!first || first.type !== "id") throw new Error("call requires a callee");
+  if (!first || (first.type !== "id" && first.type !== "keyword")) {
+    throw new Error("call requires a callee");
+  }
   parts.push(first.value);
   while (p.match(".")) {
-    const next = p.take();
-    if (!next || next.type !== "id") throw new Error("invalid member in callee");
-    parts.push(next.value);
+    const name = takeMemberName(p);
+    if (!name) throw new Error("invalid member in callee");
+    parts.push(name);
   }
   let args = [];
   if (p.match("(")) {
@@ -429,11 +473,10 @@ function parsePrimaryAtom(p) {
     p.take();
     const parts = [t.value];
     while (p.peek()?.type === ".") {
-      // look ahead: id.id — but not if next after . is not id
       p.take();
-      const next = p.take();
-      if (!next || next.type !== "id") throw new Error("expected identifier after .");
-      parts.push(next.value);
+      const name = takeMemberName(p);
+      if (!name) throw new Error("expected identifier after .");
+      parts.push(name);
     }
     if (parts.length === 1) return { kind: "ref", name: parts[0] };
     return { kind: "member", parts };
@@ -441,7 +484,67 @@ function parsePrimaryAtom(p) {
   throw new Error(`invalid expression atom: ${JSON.stringify(t)}`);
 }
 
-/* ---------------- headers ---------------- */
+/* ---------------- types + headers ---------------- */
+
+function splitTopLevel(text, sep) {
+  const parts = [];
+  let depthParen = 0;
+  let depthBracket = 0;
+  let start = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    if (ch === "(") depthParen += 1;
+    else if (ch === ")") depthParen -= 1;
+    else if (ch === "[") depthBracket += 1;
+    else if (ch === "]") depthBracket -= 1;
+    else if (ch === sep && depthParen === 0 && depthBracket === 0) {
+      parts.push(text.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  parts.push(text.slice(start).trim());
+  return parts.filter((p) => p.length);
+}
+
+function parseType(text) {
+  const s = text.trim();
+  if (!s) throw new Error("empty type");
+  if (s.startsWith("list[") && s.endsWith("]")) {
+    return { kind: "list", element: parseType(s.slice(5, -1)) };
+  }
+  if (s.startsWith("map[") && s.endsWith("]")) {
+    const inner = s.slice(4, -1);
+    const parts = splitTopLevel(inner, ",");
+    if (parts.length !== 2) {
+      throw new Error(`map type requires key and value: ${JSON.stringify(s)}`);
+    }
+    return { kind: "map", key: parseType(parts[0]), value: parseType(parts[1]) };
+  }
+  if (/^[A-Za-z_][\w]*$/.test(s)) return s;
+  throw new Error(`invalid type: ${JSON.stringify(s)}`);
+}
+
+function splitTrailingType(header) {
+  let depthParen = 0;
+  let depthBracket = 0;
+  let colon = -1;
+  for (let i = 0; i < header.length; i += 1) {
+    const ch = header[i];
+    if (ch === "(") depthParen += 1;
+    else if (ch === ")") depthParen -= 1;
+    else if (ch === "[") depthBracket += 1;
+    else if (ch === "]") depthBracket -= 1;
+    else if (ch === ":" && depthParen === 0 && depthBracket === 0) {
+      colon = i;
+      break;
+    }
+  }
+  if (colon === -1) return { header, valueType: null };
+  const left = header.slice(0, colon).trim();
+  const right = header.slice(colon + 1).trim();
+  if (!/(?:^|\s)[A-Za-z_][\w]*$/.test(left)) return { header, valueType: null };
+  return { header: left, valueType: parseType(right) };
+}
 
 function parseImportItems(chunk) {
   const items = [];
@@ -486,11 +589,15 @@ function splitParamsAndRest(text) {
 
 function parseParams(paramsText) {
   if (!paramsText) return [];
-  return paramsText.split(",").map((raw) => {
-    const part = raw.trim();
-    const m = part.match(/^([A-Za-z_][\w]*)\s*:\s*([A-Za-z_][\w]*)$/);
-    if (!m) throw new Error(`invalid parameter: ${JSON.stringify(part)}`);
-    return { name: m[1], type: m[2] };
+  return splitTopLevel(paramsText, ",").map((part) => {
+    const colon = part.indexOf(":");
+    if (colon === -1) throw new Error(`invalid parameter: ${JSON.stringify(part)}`);
+    const name = part.slice(0, colon).trim();
+    const typeText = part.slice(colon + 1).trim();
+    if (!/^[A-Za-z_][\w]*$/.test(name)) {
+      throw new Error(`invalid parameter name: ${JSON.stringify(name)}`);
+    }
+    return { name, type: parseType(typeText) };
   });
 }
 
@@ -534,27 +641,21 @@ function parseDefineHeader(rest) {
     header = split.before;
     params = parseParams(split.paramsText);
     if (split.after.startsWith("->")) {
-      returnType = split.after.slice(2).trim();
-      if (!/^[A-Za-z_][\w]*$/.test(returnType)) {
-        throw new Error(`invalid return type: ${JSON.stringify(returnType)}`);
-      }
+      returnType = parseType(split.after.slice(2).trim());
     } else if (split.after) {
       throw new Error(`unexpected tokens after parameters: ${JSON.stringify(split.after)}`);
     }
   } else {
-    const arrow = header.match(/^(.*?)\s*->\s*([A-Za-z_][\w]*)$/);
-    if (arrow) {
-      header = arrow[1].trim();
-      returnType = arrow[2];
+    const arrowAt = header.indexOf("->");
+    if (arrowAt !== -1) {
+      returnType = parseType(header.slice(arrowAt + 2).trim());
+      header = header.slice(0, arrowAt).trim();
     }
   }
 
-  let valueType = null;
-  const valueTypeMatch = header.match(/^(.*?)\s*:\s*([A-Za-z_][\w]*)$/);
-  if (valueTypeMatch) {
-    header = valueTypeMatch[1].trim();
-    valueType = valueTypeMatch[2];
-  }
+  const splitType = splitTrailingType(header);
+  header = splitType.header;
+  const valueType = splitType.valueType;
 
   const tokens = header.split(/\s+/).filter(Boolean);
   if (!tokens.length) throw new Error("empty define");
@@ -730,7 +831,7 @@ function attachStatement(stack, body, stmt, indent, issues, lineNo) {
     issues.push(
       issue(
         `${stmt.op} is only valid inside a function, method, constructor, or if body`,
-        [stmt.op === "if" ? "F10" : "F1"],
+        [stmt.op === "if" ? "F10" : stmt.op === "for" ? "F13" : "F1"],
         lineNo,
       ),
     );
@@ -984,13 +1085,48 @@ function reviewSource(text) {
     }
 
     if (line.startsWith("set ")) {
-      const m = line.match(/^set\s+([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)+)\s*=\s*(.+)$/);
-      if (!m) {
-        issues.push(issue(`invalid set syntax: ${line}`, ["F6"], idx));
+      const rest = line.slice("set ".length);
+      let eq = -1;
+      let depthParen = 0;
+      let depthBracket = 0;
+      let inStr = null;
+      for (let i = 0; i < rest.length; i += 1) {
+        const ch = rest[i];
+        if (inStr) {
+          if (ch === "\\" && i + 1 < rest.length) {
+            i += 1;
+            continue;
+          }
+          if (ch === inStr) inStr = null;
+          continue;
+        }
+        if (ch === '"' || ch === "'") {
+          inStr = ch;
+          continue;
+        }
+        if (ch === "(") depthParen += 1;
+        else if (ch === ")") depthParen -= 1;
+        else if (ch === "[") depthBracket += 1;
+        else if (ch === "]") depthBracket -= 1;
+        else if (ch === "=" && depthParen === 0 && depthBracket === 0) {
+          eq = i;
+          break;
+        }
+      }
+      if (eq === -1) {
+        issues.push(issue(`invalid set syntax: ${line}`, ["F6", "F12"], idx));
         continue;
       }
       try {
-        const value = parseExpression(m[2]);
+        const target = parseExpression(rest.slice(0, eq));
+        if (
+          target.kind !== "ref" &&
+          target.kind !== "member" &&
+          target.kind !== "index"
+        ) {
+          throw new Error("set target must be a name, member, or index");
+        }
+        const value = parseExpression(rest.slice(eq + 1));
         counters.stmt += 1;
         attachStatement(
           stack,
@@ -998,7 +1134,7 @@ function reviewSource(text) {
           {
             id: `stmt_${counters.stmt}`,
             op: "set",
-            target: { kind: "member", parts: m[1].split(".") },
+            target,
             value,
           },
           indent,
@@ -1006,7 +1142,39 @@ function reviewSource(text) {
           idx,
         );
       } catch (err) {
-        issues.push(issue(err.message, ["F6", "F3"], idx));
+        issues.push(issue(err.message, ["F6", "F12"], idx));
+      }
+      continue;
+    }
+
+    if (line.startsWith("for ")) {
+      const m = line.match(/^for\s+([A-Za-z_][\w]*)\s+in\s+(.+)$/);
+      if (!m) {
+        issues.push(issue(`invalid for syntax: ${line}`, ["F13"], idx));
+        continue;
+      }
+      try {
+        const iterable = parseExpression(m[2]);
+        counters.stmt += 1;
+        const forNode = {
+          id: `stmt_${counters.stmt}`,
+          op: "for",
+          name: m[1],
+          iterable,
+          body: [],
+        };
+        attachStatement(stack, body, forNode, indent, issues, idx);
+        const bodyOwner = findBodyOwner(stack);
+        if (bodyOwner && Array.isArray(bodyOwner.bodyRef) && bodyOwner.bodyRef.includes(forNode)) {
+          stack.push({
+            indent,
+            node: forNode,
+            scope: "for_body",
+            bodyRef: forNode.body,
+          });
+        }
+      } catch (err) {
+        issues.push(issue(err.message, ["F13"], idx));
       }
       continue;
     }

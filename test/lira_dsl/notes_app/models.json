@@ -24,7 +24,8 @@
           "modifiers": {
             "public": true,
             "readonly": true
-          }
+          },
+          "type": "string"
         },
         {
           "id": "decl_title",
@@ -33,7 +34,8 @@
           "name": "title",
           "modifiers": {
             "public": true
-          }
+          },
+          "type": "string"
         },
         {
           "id": "decl_body",
@@ -42,7 +44,8 @@
           "name": "body",
           "modifiers": {
             "private": true
-          }
+          },
+          "type": "string"
         },
         {
           "id": "decl_Note_constructor",

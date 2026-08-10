@@ -1,9 +1,9 @@
 module notes_models
 
 define export class Note
-  define public readonly property id
-  define public property title
-  define private property body
+  define public readonly property id: string
+  define public property title: string
+  define private property body: string
   define constructor(id: string, title: string)
     set this.id = id
     set this.title = title

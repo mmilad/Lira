@@ -4,17 +4,24 @@ import Note from "./models"
 import NoteStore from "./store"
 
 define export class NoteService
-  define private property store
+  define private property store: NoteStore
   define constructor(store: NoteStore)
     set this.store = store
   define public method create(title: string) -> Note
-    define variable safeTitle = title
+    define variable safeTitle: string = title
     if title == ""
       assign safeTitle = "untitled"
-    define variable note = construct Note("1", safeTitle)
+    define variable note: Note = construct Note("1", safeTitle)
     call this.store.save(note)
     return note
   define public async method load(id: string) -> Note
     return this.store.get(id)
-  define public method list() -> Note
+  define public method list() -> list[Note]
     return this.store.list()
+  define public method firstTitle() -> string
+    define variable notes: list[Note] = this.store.list()
+    define variable result: string = ""
+    for note in notes
+      if result == ""
+        assign result = note.title
+    return result
