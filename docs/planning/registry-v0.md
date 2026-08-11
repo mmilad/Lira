@@ -1,6 +1,6 @@
 # Registry v0
 
-> Status: design foundation / migration in progress. The existing parser remains authoritative until the migration is complete.
+> Status: registry foundation complete; parser migration prepared but not yet switched. The existing parser remains authoritative until the final mechanical migration is complete.
 
 ## Purpose
 
@@ -38,6 +38,8 @@ Target metadata describes whether the semantic concept can be represented. It do
 - preferred-vocabulary queries return only preferred spellings by default.
 
 This is deliberate: aliases can later be tested as emergent behavior without explicitly teaching them to the model.
+
+Aliases are registered but are **not enabled as new parser syntax during the structural refactor**. Alias parsing is a separate experiment after parity.
 
 ### Target support
 
@@ -93,42 +95,80 @@ for_body
 
 Indentation continues to determine ownership/scope in textual Lira.
 
+## Runtime views
+
+`tools/lira_registry_runtime.mjs` derives the Set/table shapes used by the current parser design:
+
+```text
+KIND_WORDS
+MODIFIER_WORDS
+VISIBILITY_WORDS
+MEMBER_KINDS
+MODULE_ONLY_KINDS
+CALLABLE_KINDS
+BODY_OWNER_SCOPES
+MODIFIER_MATRIX
+```
+
+This gives the parser a mechanical migration path without teaching it about registry storage details.
+
+A temporary parity guard in `lira_registry_check.mjs` asserts that these derived views still match the pre-registry v0 parser surface. When the language intentionally changes, that guard should be updated in the same change as the design decision.
+
 ## Vocabulary queries for models
 
-The long-term producer API should not dump the full language specification into an LLM context. It should query only vocabulary relevant to the current state.
+The producer side should not dump the full language specification into an LLM context. `tools/lira_vocabulary.mjs` exposes a deliberately small contextual query that returns **preferred spellings only**.
 
 Conceptually:
 
 ```js
-preferredVocabulary({
+getVocabulary({
   target: "py",
-  scope: "class"
+  scope: "class",
+  role: "modifier",
+  kind: "method",
+  usedModifiers: ["private"]
 })
 ```
 
-returns preferred words only.
+The query currently filters:
 
-Later this can become more context-aware by including the current operation, selected modifiers and declaration kind, but v0 intentionally avoids building a next-token state machine.
+- target support
+- scope
+- semantic role
+- selected declaration kind / required capability
+- already-used modifiers
+- mutually exclusive modifier groups such as visibility
+
+It is intentionally **not** a next-token grammar/state machine.
 
 ## Migration strategy
 
-The registry is being introduced in two slices.
+### Slice 1 — registry foundation — complete
 
-### Slice 1 — registry foundation
+- declarative registry added
+- registry self-validation added
+- existing modifier compatibility copied without changing semantics
+- preferred/alias/target behavior documented
+- parser-compatible runtime views derived from registry
+- contextual preferred-vocabulary query added
+- registry/parity checks included in the default test command
+- no new DSL spelling enabled
 
-- add declarative registry
-- add registry self-validation
-- copy existing modifier compatibility without changing semantics
-- document preferred/alias/target behavior
-- do not enable new DSL spellings yet
+### Slice 2 — parser migration — next
 
-### Slice 2 — parser migration
-
-- derive `KINDS`, `MODIFIERS`, visibility groups and compatibility from the registry
-- resolve aliases generically before parsing semantics
+- replace parser-local `KINDS`, `MODIFIERS`, visibility sets and compatibility matrix with imports from `lira_registry_runtime.mjs`
+- keep preferred spellings only during this step
 - remove duplicated keyword/matrix constants from the parser
 - keep all existing corpus and pipeline goldens unchanged
-- add focused alias cases only after parity is proven
+- verify parser/corpus/pipeline parity
+
+### Slice 3 — alias experiment — only after parity
+
+- add generic vocabulary resolution at the parser boundary
+- normalize aliases to preferred/semantic concepts before semantic parsing
+- add focused alias corpus cases
+- do not expose aliases through guided vocabulary
+- measure whether producers/models use aliases without being taught them
 
 ## Non-goals for this refactor
 
