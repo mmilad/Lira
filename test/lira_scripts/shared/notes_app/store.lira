@@ -1,5 +1,7 @@
 module notes_store
 
+import Note from "./models"
+
 define export interface NoteStore
   define method get(id: string) -> Note?
   define method save(note: Note) -> Note

@@ -20,6 +20,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { reviewSource, normalizeIr } from "./lira_keyword_dsl.mjs";
 import { TARGETS } from "./emitters.mjs";
+import { testRunnableApps } from "./lira_runtime.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, "..");
@@ -113,11 +114,12 @@ function buildArtifacts(file) {
   const ir = normalizeIr(result.ir);
   const dslJson = stableJson(ir);
   const targets = emitTargetsForScope(scope);
+  const isEntry = file.endsWith("/main.lira") || file.endsWith("\\main.lira");
   /** @type {{ target: string, relPath: string, content: string }[]} */
   const outputs = targets.map((t) => ({
     target: t.namespace,
     relPath: `${name}${t.extension}`,
-    content: t.emit(ir),
+    content: t.emit(ir, { entry: isEntry }),
   }));
   return { name, label, dslJson, outputs };
 }
@@ -205,6 +207,8 @@ function test() {
     }
   }
   const total = files.length;
+  const runtimeFailures = testRunnableApps();
+  failures += runtimeFailures;
   console.log(`\n${total} script(s), ${failures} failure(s)`);
   return failures ? 1 : 0;
 }

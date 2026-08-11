@@ -1,0 +1,51 @@
+{
+  "module": {
+    "id": "mod_f16_print",
+    "op": "module",
+    "name": "f16_print"
+  },
+  "body": [
+    {
+      "id": "decl_demo",
+      "op": "define",
+      "kind": "function",
+      "name": "demo",
+      "modifiers": {
+        "export": true
+      },
+      "params": [],
+      "body": [
+        {
+          "id": "stmt_1",
+          "op": "call",
+          "callee": {
+            "kind": "ref",
+            "name": "print"
+          },
+          "args": [
+            {
+              "kind": "literal",
+              "type": "string",
+              "value": "hello"
+            }
+          ]
+        },
+        {
+          "id": "stmt_2",
+          "op": "call",
+          "callee": {
+            "kind": "ref",
+            "name": "print"
+          },
+          "args": [
+            {
+              "kind": "literal",
+              "type": "string",
+              "value": "world"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

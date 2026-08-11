@@ -1,12 +1,17 @@
 // module notes_main
 import { NoteService } from "./service";
 
-import { Note as NoteModel } from "./models";
+import { MemoryNoteStore } from "./memory_store";
 
-export const APP_NAME = "notes";
-
-export function boot(service: NoteService): NoteModel {
-  let note = new NoteModel("1", "hello");
-  service.create(note.title);
-  return note;
+export function main(): void {
+  let store = new MemoryNoteStore();
+  let service = new NoteService(store);
+  console.log("notes: starting");
+  let created = service.create("hello");
+  console.log(created.title);
+  let title = service.firstTitle();
+  console.log(title);
 }
+
+
+main();

@@ -1,2 +1,3 @@
 # module demo
-from "pkg" import a, b, c as x
+from __future__ import annotations
+from pkg import a, b, c as x

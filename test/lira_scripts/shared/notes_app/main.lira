@@ -1,11 +1,13 @@
 module notes_main
 
 import NoteService from "./service"
-import Note as NoteModel from "./models"
+import MemoryNoteStore from "./memory_store"
 
-define export constant APP_NAME = "notes"
-
-define export function boot(service: NoteService) -> NoteModel
-  define variable note = construct NoteModel("1", "hello")
-  call service.create(note.title)
-  return note
+define export function main()
+  define variable store = construct MemoryNoteStore()
+  define variable service = construct NoteService(store)
+  call print("notes: starting")
+  define variable created = call service.create("hello")
+  call print(created.title)
+  define variable title = call service.firstTitle()
+  call print(title)

@@ -1,5 +1,6 @@
 # module user_service
-from "./models" import User
+from __future__ import annotations
+from .models import User
 
 class UserService:
     id

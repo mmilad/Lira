@@ -1,0 +1,17 @@
+module api_memory_store
+
+import User from "./models"
+import UserStore from "./store"
+
+define export class InMemoryUserStore implements UserStore
+  define private property users: list[User] = list()
+  define public method get(id: string) -> User?
+    for user in this.users
+      if user.id == id
+        return user
+    return null
+  define public method save(user: User) -> User
+    call append(this.users, user)
+    return user
+  define public method list() -> list[User]
+    return this.users

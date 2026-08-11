@@ -35,6 +35,8 @@ description: >-
 
 `module`, `define`, `import`, `export`, `return`, `assign`, `set`, `call`, `if`, `else`, `for`, `throw`
 
+Portable builtins via `call`: `print(expr)`, `append(list, item)`.
+
 Boolean ops in expressions: `and`, `or`, `not` (not `&&` / `||` / `!`).
 
 Collections: `list[T]`, `map[K, V]`, `list(...)`, `map()`, index `a[i]`.

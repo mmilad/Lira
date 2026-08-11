@@ -1,4 +1,5 @@
 # module f6_constructor
+from __future__ import annotations
 class User:
     name: str
 

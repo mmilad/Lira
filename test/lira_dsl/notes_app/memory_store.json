@@ -1,0 +1,213 @@
+{
+  "module": {
+    "id": "mod_notes_memory_store",
+    "op": "module",
+    "name": "notes_memory_store"
+  },
+  "body": [
+    {
+      "id": "imp_1",
+      "op": "import",
+      "source": "./models",
+      "style": "named",
+      "items": [
+        {
+          "name": "Note",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "imp_2",
+      "op": "import",
+      "source": "./store",
+      "style": "named",
+      "items": [
+        {
+          "name": "NoteStore",
+          "alias": null
+        }
+      ]
+    },
+    {
+      "id": "decl_MemoryNoteStore",
+      "op": "define",
+      "kind": "class",
+      "name": "MemoryNoteStore",
+      "modifiers": {
+        "export": true
+      },
+      "extends": null,
+      "implements": [
+        "NoteStore"
+      ],
+      "members": [
+        {
+          "id": "decl_notes",
+          "op": "define",
+          "kind": "property",
+          "name": "notes",
+          "modifiers": {
+            "private": true
+          },
+          "type": {
+            "kind": "list",
+            "element": "Note"
+          },
+          "init": {
+            "kind": "list",
+            "elements": []
+          }
+        },
+        {
+          "id": "decl_get",
+          "op": "define",
+          "kind": "method",
+          "name": "get",
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "returns": {
+            "kind": "nullable",
+            "inner": "Note"
+          },
+          "body": [
+            {
+              "id": "stmt_1",
+              "op": "for",
+              "name": "note",
+              "iterable": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "notes"
+                ]
+              },
+              "body": [
+                {
+                  "id": "stmt_2",
+                  "op": "if",
+                  "condition": {
+                    "kind": "binary",
+                    "op": "==",
+                    "left": {
+                      "kind": "member",
+                      "parts": [
+                        "note",
+                        "id"
+                      ]
+                    },
+                    "right": {
+                      "kind": "ref",
+                      "name": "id"
+                    }
+                  },
+                  "then": [
+                    {
+                      "id": "stmt_3",
+                      "op": "return",
+                      "value": {
+                        "kind": "ref",
+                        "name": "note"
+                      }
+                    }
+                  ],
+                  "else": null
+                }
+              ]
+            },
+            {
+              "id": "stmt_4",
+              "op": "return",
+              "value": {
+                "kind": "literal",
+                "type": "null",
+                "value": null
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_save",
+          "op": "define",
+          "kind": "method",
+          "name": "save",
+          "modifiers": {
+            "public": true
+          },
+          "params": [
+            {
+              "name": "note",
+              "type": "Note"
+            }
+          ],
+          "returns": "Note",
+          "body": [
+            {
+              "id": "stmt_5",
+              "op": "call",
+              "callee": {
+                "kind": "ref",
+                "name": "append"
+              },
+              "args": [
+                {
+                  "kind": "member",
+                  "parts": [
+                    "this",
+                    "notes"
+                  ]
+                },
+                {
+                  "kind": "ref",
+                  "name": "note"
+                }
+              ]
+            },
+            {
+              "id": "stmt_6",
+              "op": "return",
+              "value": {
+                "kind": "ref",
+                "name": "note"
+              }
+            }
+          ]
+        },
+        {
+          "id": "decl_list",
+          "op": "define",
+          "kind": "method",
+          "name": "list",
+          "modifiers": {
+            "public": true
+          },
+          "params": [],
+          "returns": {
+            "kind": "list",
+            "element": "Note"
+          },
+          "body": [
+            {
+              "id": "stmt_7",
+              "op": "return",
+              "value": {
+                "kind": "member",
+                "parts": [
+                  "this",
+                  "notes"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

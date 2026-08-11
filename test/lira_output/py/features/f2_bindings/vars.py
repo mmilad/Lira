@@ -1,4 +1,5 @@
 # module f2_bindings
+from __future__ import annotations
 def demo() -> float:
     label = "n"
     count = 1

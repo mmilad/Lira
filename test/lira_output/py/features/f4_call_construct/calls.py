@@ -1,5 +1,6 @@
 # module f4_call_construct
-from "./user" import User
+from __future__ import annotations
+from .user import User
 
 def boot(other: User) -> User:
     user = User("Ada")

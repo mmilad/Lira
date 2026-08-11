@@ -1,0 +1,8 @@
+module api_store
+
+import User from "./models"
+
+define export interface UserStore
+  define method get(id: string) -> User?
+  define method save(user: User) -> User
+  define method list() -> list[User]
