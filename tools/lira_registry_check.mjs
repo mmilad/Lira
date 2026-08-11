@@ -17,6 +17,7 @@ import {
   MODULE_ONLY_KINDS,
   VISIBILITY_WORDS,
 } from "./lira_registry_runtime.mjs";
+import { getVocabulary } from "./lira_vocabulary.mjs";
 
 const errors = validateRegistry();
 
@@ -104,6 +105,39 @@ for (const mod of MODIFIER_WORDS) {
   }
 }
 
+// Guided vocabulary returns preferred spellings only and filters obvious
+// semantic impossibilities without pretending to be a next-token grammar.
+expectSet(
+  "module kinds",
+  getVocabulary({ target: "ts", scope: "module", role: "kind" }),
+  ["class", "interface", "function", "variable", "constant"],
+);
+expectSet(
+  "class-member kinds",
+  getVocabulary({ target: "ts", scope: "class", role: "kind" }),
+  ["method", "constructor", "property", "variable", "constant"].filter((word) =>
+    KIND_WORDS.has(word) && resolveVocabularyWord(word)?.scopes?.includes("class"),
+  ),
+);
+expectSet(
+  "method modifiers",
+  getVocabulary({ target: "ts", scope: "class", role: "modifier", kind: "method" }),
+  ["abstract", "static", "async", "public", "protected", "private"],
+);
+const afterPrivate = getVocabulary({
+  target: "ts",
+  scope: "class",
+  role: "modifier",
+  kind: "method",
+  usedModifiers: ["private"],
+});
+if (afterPrivate.includes("public") || afterPrivate.includes("protected") || afterPrivate.includes("private")) {
+  errors.push("visibility group should allow only one visibility modifier");
+}
+if (getVocabulary({ target: "ts", scope: "module", role: "modifier", kind: "class" }).includes("exported")) {
+  errors.push("guided vocabulary must return preferred spelling, never alias exported");
+}
+
 if (errors.length) {
   for (const error of errors) console.error(`FAIL ${error}`);
   console.error(`\n${errors.length} registry failure(s)`);
@@ -113,5 +147,6 @@ if (errors.length) {
   console.log(`ok   ${entriesByRole("kind").length} kinds`);
   console.log(`ok   ${entriesByRole("modifier").length} modifiers`);
   console.log(`ok   parser-compatible runtime views derived from registry`);
+  console.log(`ok   contextual preferred vocabulary`);
   console.log(`ok   aliases remain hidden from preferred vocabulary`);
 }
