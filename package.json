@@ -7,6 +7,7 @@
   "scripts": {
     "generate": "node tools/lira_pipeline.mjs generate",
     "test": "node tools/lira_pipeline.mjs test",
-    "check:examples": "node tools/lira_keyword_dsl.mjs check"
+    "check:examples": "node tools/lira_keyword_dsl.mjs check",
+    "check:registry": "node tools/lira_registry_check.mjs"
   }
 }
