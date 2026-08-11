@@ -7,6 +7,16 @@ import {
   resolveVocabularyWord,
   validateRegistry,
 } from "./lira_registry.mjs";
+import {
+  BODY_OWNER_SCOPES,
+  CALLABLE_KINDS,
+  KIND_WORDS,
+  MEMBER_KINDS,
+  MODIFIER_MATRIX,
+  MODIFIER_WORDS,
+  MODULE_ONLY_KINDS,
+  VISIBILITY_WORDS,
+} from "./lira_registry_runtime.mjs";
 
 const errors = validateRegistry();
 
@@ -40,6 +50,60 @@ if (resolveVocabularyWord("exported")?.semantic !== "export") {
   errors.push("exported alias should resolve to export semantics");
 }
 
+// Temporary parser-parity guard. These are the shapes the existing parser had
+// before registry extraction. Keeping them here makes the migration mechanical:
+// changing registry semantics must be an explicit design change, not a side
+// effect of moving constants around.
+function expectSet(label, actual, expected) {
+  const got = [...actual].sort();
+  const want = [...expected].sort();
+  if (JSON.stringify(got) !== JSON.stringify(want)) {
+    errors.push(`${label} drift: got ${JSON.stringify(got)}, expected ${JSON.stringify(want)}`);
+  }
+}
+
+expectSet("kinds", KIND_WORDS, [
+  "class",
+  "interface",
+  "function",
+  "method",
+  "constructor",
+  "property",
+  "variable",
+  "constant",
+]);
+expectSet("modifiers", MODIFIER_WORDS, [
+  "export",
+  "abstract",
+  "static",
+  "async",
+  "public",
+  "protected",
+  "private",
+  "readonly",
+]);
+expectSet("visibility", VISIBILITY_WORDS, ["public", "protected", "private"]);
+expectSet("member kinds", MEMBER_KINDS, ["method", "constructor", "property"]);
+expectSet("module-only kinds", MODULE_ONLY_KINDS, ["class", "interface", "function"]);
+expectSet("callable kinds", CALLABLE_KINDS, ["function", "method", "constructor"]);
+expectSet("body-owner scopes", BODY_OWNER_SCOPES, [
+  "function",
+  "method",
+  "constructor",
+  "if_then",
+  "if_else",
+  "for_body",
+]);
+
+for (const mod of MODIFIER_WORDS) {
+  if (!MODIFIER_MATRIX[mod]) errors.push(`modifier matrix missing ${mod}`);
+  for (const kind of KIND_WORDS) {
+    if (!MODIFIER_MATRIX[mod]?.[kind]) {
+      errors.push(`modifier matrix missing ${mod}/${kind}`);
+    }
+  }
+}
+
 if (errors.length) {
   for (const error of errors) console.error(`FAIL ${error}`);
   console.error(`\n${errors.length} registry failure(s)`);
@@ -48,5 +112,6 @@ if (errors.length) {
   console.log(`ok   ${VOCABULARY.length} registry entries`);
   console.log(`ok   ${entriesByRole("kind").length} kinds`);
   console.log(`ok   ${entriesByRole("modifier").length} modifiers`);
+  console.log(`ok   parser-compatible runtime views derived from registry`);
   console.log(`ok   aliases remain hidden from preferred vocabulary`);
 }
