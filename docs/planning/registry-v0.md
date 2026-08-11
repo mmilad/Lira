@@ -1,6 +1,6 @@
 # Registry v0
 
-> Status: registry foundation complete; parser migration prepared but not yet switched. The existing parser remains authoritative until the final mechanical migration is complete.
+> Status: Slice 2 complete. The parser/validator consumes registry runtime views for kinds, modifiers, visibility, scope classifications, and the modifier compatibility matrix. Aliases remain registered but dormant (Slice 3).
 
 ## Purpose
 
@@ -110,9 +110,9 @@ BODY_OWNER_SCOPES
 MODIFIER_MATRIX
 ```
 
-This gives the parser a mechanical migration path without teaching it about registry storage details.
+`tools/lira_keyword_dsl.mjs` imports these views rather than maintaining a second copy of the semantic tables. Expression operators and other low-level parse mechanics stay parser-local.
 
-A temporary parity guard in `lira_registry_check.mjs` asserts that these derived views still match the pre-registry v0 parser surface. When the language intentionally changes, that guard should be updated in the same change as the design decision.
+A parity guard in `lira_registry_check.mjs` asserts that the derived Sets and the full modifier matrix (including the `module` column) still match the frozen v0 surface. When the language intentionally changes, that guard should be updated in the same change as the design decision.
 
 ## Vocabulary queries for models
 
@@ -154,13 +154,14 @@ It is intentionally **not** a next-token grammar/state machine.
 - registry/parity checks included in the default test command
 - no new DSL spelling enabled
 
-### Slice 2 — parser migration — next
+### Slice 2 — parser migration — complete
 
-- replace parser-local `KINDS`, `MODIFIERS`, visibility sets and compatibility matrix with imports from `lira_registry_runtime.mjs`
-- keep preferred spellings only during this step
-- remove duplicated keyword/matrix constants from the parser
-- keep all existing corpus and pipeline goldens unchanged
-- verify parser/corpus/pipeline parity
+- parser-local `KINDS`, `MODIFIERS`, visibility sets and compatibility matrix replaced with imports from `lira_registry_runtime.mjs`
+- preferred spellings only; aliases not enabled as parser syntax
+- duplicated keyword/matrix constants removed from the parser
+- existing corpus and pipeline goldens unchanged
+- parser/corpus/pipeline parity verified
+- matrix parity check strengthened to deep-equal the full v0 table
 
 ### Slice 3 — alias experiment — only after parity
 
@@ -181,4 +182,4 @@ It is intentionally **not** a next-token grammar/state machine.
 
 ## Success criterion
 
-The migration is successful when the existing parser/corpus/pipeline behavior is unchanged while vocabulary, aliases and compatibility are centrally declared and queryable for future LLM guidance.
+Slice 1–2 succeed when parser/corpus/pipeline behavior stays unchanged while vocabulary, aliases and compatibility are centrally declared and queryable for future LLM guidance. Slice 3 then measures alias tolerance without expanding guided vocabulary.

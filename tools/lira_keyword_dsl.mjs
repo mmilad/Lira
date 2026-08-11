@@ -13,135 +13,20 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
-const KINDS = new Set([
-  "class",
-  "interface",
-  "function",
-  "method",
-  "constructor",
-  "property",
-  "variable",
-  "constant",
-]);
-const MODIFIERS = new Set([
-  "export",
-  "abstract",
-  "static",
-  "async",
-  "public",
-  "protected",
-  "private",
-  "readonly",
-]);
-const VISIBILITY = new Set(["public", "protected", "private"]);
-const MEMBER_KINDS = new Set(["method", "property", "constructor"]);
-const MODULE_ONLY_KINDS = new Set(["class", "function", "interface"]);
-const CALLABLE_KINDS = new Set(["function", "method", "constructor"]);
-const BODY_OWNER_SCOPES = new Set([
-  "function",
-  "method",
-  "constructor",
-  "if_then",
-  "if_else",
-  "for_body",
-]);
+import {
+  KIND_WORDS as KINDS,
+  MODIFIER_WORDS as MODIFIERS,
+  VISIBILITY_WORDS as VISIBILITY,
+  MEMBER_KINDS,
+  MODULE_ONLY_KINDS,
+  CALLABLE_KINDS,
+  BODY_OWNER_SCOPES,
+  MODIFIER_MATRIX as MATRIX,
+} from "./lira_registry_runtime.mjs";
 
 const COMPARE_OPS = new Set(["==", "!=", "<=", ">=", "<", ">"]);
 const ADD_OPS = new Set(["+", "-"]);
 const MUL_OPS = new Set(["*", "/"]);
-
-/** @type {Record<string, Record<string, "allowed" | "invalid" | "deferred">>} */
-const MATRIX = {
-  export: {
-    module: "invalid",
-    class: "allowed",
-    interface: "allowed",
-    function: "allowed",
-    method: "invalid",
-    constructor: "invalid",
-    property: "invalid",
-    variable: "allowed",
-    constant: "allowed",
-  },
-  abstract: {
-    module: "invalid",
-    class: "allowed",
-    interface: "invalid",
-    function: "invalid",
-    method: "allowed",
-    constructor: "invalid",
-    property: "invalid",
-    variable: "invalid",
-    constant: "invalid",
-  },
-  static: {
-    module: "invalid",
-    class: "invalid",
-    interface: "invalid",
-    function: "invalid",
-    method: "allowed",
-    constructor: "invalid",
-    property: "allowed",
-    variable: "deferred",
-    constant: "deferred",
-  },
-  async: {
-    module: "invalid",
-    class: "invalid",
-    interface: "invalid",
-    function: "allowed",
-    method: "allowed",
-    constructor: "invalid",
-    property: "invalid",
-    variable: "invalid",
-    constant: "invalid",
-  },
-  public: {
-    module: "invalid",
-    class: "invalid",
-    interface: "invalid",
-    function: "invalid",
-    method: "allowed",
-    constructor: "allowed",
-    property: "allowed",
-    variable: "invalid",
-    constant: "invalid",
-  },
-  protected: {
-    module: "invalid",
-    class: "invalid",
-    interface: "invalid",
-    function: "invalid",
-    method: "allowed",
-    constructor: "allowed",
-    property: "allowed",
-    variable: "invalid",
-    constant: "invalid",
-  },
-  private: {
-    module: "invalid",
-    class: "invalid",
-    interface: "invalid",
-    function: "invalid",
-    method: "allowed",
-    constructor: "allowed",
-    property: "allowed",
-    variable: "invalid",
-    constant: "invalid",
-  },
-  readonly: {
-    module: "invalid",
-    class: "invalid",
-    interface: "invalid",
-    function: "invalid",
-    method: "invalid",
-    constructor: "invalid",
-    property: "allowed",
-    variable: "allowed",
-    constant: "invalid",
-  },
-};
 
 function issue(message, rules = [], line = null) {
   const out = { legal: false, error: message, rules };

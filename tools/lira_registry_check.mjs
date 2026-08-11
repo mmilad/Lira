@@ -96,13 +96,102 @@ expectSet("body-owner scopes", BODY_OWNER_SCOPES, [
   "for_body",
 ]);
 
-for (const mod of MODIFIER_WORDS) {
-  if (!MODIFIER_MATRIX[mod]) errors.push(`modifier matrix missing ${mod}`);
-  for (const kind of KIND_WORDS) {
-    if (!MODIFIER_MATRIX[mod]?.[kind]) {
-      errors.push(`modifier matrix missing ${mod}/${kind}`);
-    }
-  }
+// Deep-equal the full v0 matrix (including the "module" column). Presence-only
+// checks would miss deferred/invalid cell flips during a mechanical move.
+const EXPECTED_MODIFIER_MATRIX = {
+  export: {
+    module: "invalid",
+    class: "allowed",
+    interface: "allowed",
+    function: "allowed",
+    method: "invalid",
+    constructor: "invalid",
+    property: "invalid",
+    variable: "allowed",
+    constant: "allowed",
+  },
+  abstract: {
+    module: "invalid",
+    class: "allowed",
+    interface: "invalid",
+    function: "invalid",
+    method: "allowed",
+    constructor: "invalid",
+    property: "invalid",
+    variable: "invalid",
+    constant: "invalid",
+  },
+  static: {
+    module: "invalid",
+    class: "invalid",
+    interface: "invalid",
+    function: "invalid",
+    method: "allowed",
+    constructor: "invalid",
+    property: "allowed",
+    variable: "deferred",
+    constant: "deferred",
+  },
+  async: {
+    module: "invalid",
+    class: "invalid",
+    interface: "invalid",
+    function: "allowed",
+    method: "allowed",
+    constructor: "invalid",
+    property: "invalid",
+    variable: "invalid",
+    constant: "invalid",
+  },
+  public: {
+    module: "invalid",
+    class: "invalid",
+    interface: "invalid",
+    function: "invalid",
+    method: "allowed",
+    constructor: "allowed",
+    property: "allowed",
+    variable: "invalid",
+    constant: "invalid",
+  },
+  protected: {
+    module: "invalid",
+    class: "invalid",
+    interface: "invalid",
+    function: "invalid",
+    method: "allowed",
+    constructor: "allowed",
+    property: "allowed",
+    variable: "invalid",
+    constant: "invalid",
+  },
+  private: {
+    module: "invalid",
+    class: "invalid",
+    interface: "invalid",
+    function: "invalid",
+    method: "allowed",
+    constructor: "allowed",
+    property: "allowed",
+    variable: "invalid",
+    constant: "invalid",
+  },
+  readonly: {
+    module: "invalid",
+    class: "invalid",
+    interface: "invalid",
+    function: "invalid",
+    method: "invalid",
+    constructor: "invalid",
+    property: "allowed",
+    variable: "allowed",
+    constant: "invalid",
+  },
+};
+if (JSON.stringify(MODIFIER_MATRIX) !== JSON.stringify(EXPECTED_MODIFIER_MATRIX)) {
+  errors.push(
+    `modifier matrix drift: got ${JSON.stringify(MODIFIER_MATRIX)}, expected ${JSON.stringify(EXPECTED_MODIFIER_MATRIX)}`,
+  );
 }
 
 // Guided vocabulary returns preferred spellings only and filters obvious
